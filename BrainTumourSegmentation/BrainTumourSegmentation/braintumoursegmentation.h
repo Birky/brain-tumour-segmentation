@@ -19,6 +19,8 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_treeWidget_customContextMenuRequested(const QPoint &pos);
+
 private:
 	Ui::BrainTumourSegmentationClass ui;
 
