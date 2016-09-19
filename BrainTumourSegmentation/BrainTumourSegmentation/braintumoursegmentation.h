@@ -21,11 +21,37 @@ private slots:
 
     void on_treeWidget_customContextMenuRequested(const QPoint &pos);
 
+	void addToWindow();
+
+	void evaluate();
+
+    void on_verticalSliderTL_valueChanged(int value);
+
+    void on_verticalSliderBL_valueChanged(int value);
+
+    void on_verticalSliderTR_valueChanged(int value);
+
+    void on_verticalSliderBR_valueChanged(int value);
+
+    void on_actionThreshold_triggered();
+
 private:
 	Ui::BrainTumourSegmentationClass ui;
+	float nfTL = 1, nfTR = 1, nfBL = 1, nfBR = 1;
+	// TODO ak chces spravit dynamicky pocet sliderov
+	// jednak treba spravit vector instancii
+	// a dedit od QVerticalSlider a doplnit ho o nf a slices
+	std::vector<bts::Slice> slicesTL, slicesTR, slicesBL, slicesBR;
+
+	void changeImage(std::vector<bts::Slice> *slices, QLabel *label, int value, float normalizationFactor);
+
+	void fillTreeWidget(std::vector<bts::Patient> patients);
+
+	QImage convertMatToQImage(cv::Mat &img, float nf);
 
 public:
 	std::vector<bts::Patient> patients;
+
 };
 
 #endif // BRAINTUMOURSEGMENTATION_H

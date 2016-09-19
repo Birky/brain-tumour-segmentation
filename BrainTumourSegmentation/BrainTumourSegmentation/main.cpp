@@ -4,7 +4,7 @@
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
-	BrainTumourSegmentation w;
-	w.show();
+	BrainTumourSegmentation* w = new BrainTumourSegmentation();
+	w->show();
 	return a.exec();
 }

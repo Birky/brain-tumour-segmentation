@@ -1,0 +1,109 @@
+#include "braintumoursegmentation.h"
+#include <QFileDialog>
+#include <QListView>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+BrainTumourSegmentation::BrainTumourSegmentation(QWidget *parent)
+	: QMainWindow(parent)
+{
+	ui.setupUi(this);
+}
+
+BrainTumourSegmentation::~BrainTumourSegmentation()
+{
+
+}
+
+void BrainTumourSegmentation::on_actionOpen_image_s_triggered()
+{
+	// Multiple directory selection
+	QFileDialog fd;
+	fd.setFileMode(QFileDialog::DirectoryOnly);
+	fd.setOption(QFileDialog::DontUseNativeDialog, true);
+	fd.setDirectory("E:\\FIIT_ing\\2-semester\\DP1\\Datasets\\BRATS2015_Training\\BRATS2015_Training\\HGG_16PNG\\");
+	
+	// get the list view of the fileDialog and set its selection mode to extended
+	QListView *l = fd.findChild<QListView*>("listView");
+	if (l) {
+		l->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	}
+	fd.exec();
+	
+	// get all png files from all selected dirs
+	foreach(const QModelIndex &index, l->selectionModel()->selectedRows())
+	{
+		bts::Patient* patient = new bts::Patient();
+		bts::MRData* inputData = new bts::MRData();
+		std::vector<bts::Slice> slices[bts::modalityCount];
+		inputData->setPatient(patient); // TODO check if it is working well pointers
+
+		// Get directory name and full path
+		QString dirName = index.data(Qt::DisplayRole).toString();
+		QString dirPath = fd.directory().absolutePath() + "/" + dirName;
+
+		// fill patient by directory information
+		patient->setPatientId(dirName.toStdString());
+		patient->setDataFolder(dirPath.toStdString());
+
+		QTreeWidgetItem *treePatient = new QTreeWidgetItem(ui.treeWidget);
+		treePatient->setText(0, dirName);
+
+		std::string message = "Loading slices of patient \"" + dirName.toStdString() + "\"";
+		ui.statusBar->showMessage(QString::fromStdString(message));
+
+		QDir dir(dirPath);
+		dir.setNameFilters(QStringList() << "*.png" << "*.PNG"); // filter out only the png image files
+		
+		// get all png files
+		QFileInfoList fileInfoList = dir.entryInfoList();
+
+		// TODO toto radsej tak ze sa spocitaju T1 subory, potom toto zmaz // calculate sliceCount
+		//int sliceCount = fileInfoList.size() / bts::modalityCount;
+
+		foreach(const QFileInfo &fileInfo, fileInfoList)
+		{
+			QString filePath = fileInfo.absoluteFilePath();
+			QString fileName = fileInfo.baseName();
+
+			bts::Slice* slice = new bts::Slice(); // TODO spravit to cez konstruktor?
+			// set the filePath
+			slice->setFilePath(filePath.toStdString());
+
+			// get modality
+			QString modality = fileName.left(fileName.indexOf("_"));
+
+			// get slice number
+			int number = fileName.mid(fileName.indexOf("_") + 1, 3).toInt();
+			slice->setNumber(number);
+
+			// get slice data
+			cv::Mat sliceData = cv::imread(filePath.toStdString(), CV_LOAD_IMAGE_ANYDEPTH);
+			if (sliceData.data)
+			{
+				// set slice data
+				slice->setDataOrg(sliceData);
+			}
+
+			// push_back the new slice
+			slices[bts::modalityMap[modality.toStdString()]].push_back(*slice);
+		}
+
+		// set the slice count
+		inputData->setSliceCount(slices[0].size());
+	}
+
+	ui.statusBar->showMessage(QString::fromStdString("Loading patient data is done."));
+}
+
+void BrainTumourSegmentation::on_pushButton_clicked()
+{
+	
+	cv::Mat img = cv::imread("E:\\FIIT_ing\\2-semester\\DP1\\Datasets\\BRATS2015_Training\\BRATS2015_Training\\HGG_16PNG\\pa0001\\Flair_068.png", CV_LOAD_IMAGE_ANYDEPTH);
+	img.convertTo(img, CV_8UC1, 0.182);
+	QImage imgIn = QImage((uchar*)img.data, img.cols, img.rows, img.step, QImage::Format_Grayscale8);
+	
+
+	ui.labelTL->setPixmap(QPixmap::fromImage(imgIn));
+	ui.labelTL->setScaledContents(true);
+}
