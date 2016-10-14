@@ -1,5 +1,8 @@
 #include "braintumoursegmentation.h"
 #include "thresholdtoolwindow.h"
+#include "resultwindow.h"
+#include "imagearithmwindow.h"
+#include "complexsegmentation.h"
 #include <QFileDialog>
 #include <QListView>
 #include <opencv2/core/core.hpp>
@@ -126,10 +129,59 @@ void BrainTumourSegmentation::on_treeWidget_customContextMenuRequested(const QPo
 	if (selectedItem != nullptr && selectedItem->childCount() == 0)
 	{
 		// Create context menu
+		/*QMenu mainMenu(this);
+		QMenu addMenu(&mainMenu);
+
+		// create the addMenu
+		QPoint *pt = new QPoint(pos);
+		QAction *newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to TL"), this);
+		newAct->setStatusTip(tr("Add to Top the Left window."));
+		newAct->setObjectName("TL");
+		newAct->setData(*pt);
+		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
+		addMenu.addAction(newAct);
+
+		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to TR"), this);
+		newAct->setStatusTip(tr("Add to the Top Right window."));
+		newAct->setObjectName("TR");
+		newAct->setData(*pt);
+		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
+		addMenu.addAction(newAct);
+
+		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to BL"), this);
+		newAct->setStatusTip(tr("Add to the Bottom Left window."));
+		newAct->setObjectName("BL");
+		newAct->setData(*pt);
+		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
+		addMenu.addAction(newAct);
+
+		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to BR"), this);
+		newAct->setStatusTip(tr("Add to the Bottom Right window."));
+		newAct->setObjectName("BR");
+		newAct->setData(*pt);
+		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
+		addMenu.addAction(newAct);
+
+		// create mainMenu
+		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Slices"), this);
+		newAct->setObjectName("SLICES");
+		newAct->setMenu(&addMenu);
+		mainMenu.addAction(newAct);
+
+		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Evaluated slices"), this);
+		newAct->setObjectName("ESLICES");
+		newAct->setMenu(&addMenu);
+		mainMenu.addAction(newAct);*/
+
+
+
 		QMenu menu(this);
 
 		// Create context menu actions
 		// TODO z�skaj nejak� ikony a vylep�i si to
+		QMenu subMenu(&menu);
+
+
 		QPoint *pt = new QPoint(pos);
 		QAction *newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to TL"), this);
 		newAct->setStatusTip(tr("Add to Top the Left window."));
@@ -160,7 +212,7 @@ void BrainTumourSegmentation::on_treeWidget_customContextMenuRequested(const QPo
 		menu.addAction(newAct);
 
 		// For processed data add Evaluate
-		if (bts::isProcessedData(selectedItem->text(0).toStdString()))
+	/*	if (bts::isProcessedData(selectedItem->text(0).toStdString()))
 		{
 			newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Evaluate"), this);
 			newAct->setStatusTip(tr("Evaluate the processed data."));
@@ -168,14 +220,14 @@ void BrainTumourSegmentation::on_treeWidget_customContextMenuRequested(const QPo
 			newAct->setData(*pt);
 			connect(newAct, SIGNAL(triggered()), this, SLOT(evaluate()));
 			menu.addAction(newAct);
-		}
+		}*/
 
 		// exec context menu at the clicked position
 		menu.exec(ui.treeWidget->mapToGlobal(pos));
 	}
 }
 
-void BrainTumourSegmentation::evaluate()
+/*void BrainTumourSegmentation::evaluate()
 {
 	QAction *act = qobject_cast<QAction *>(sender());
 
@@ -205,7 +257,7 @@ void BrainTumourSegmentation::evaluate()
 		}
 	}
 }
-
+*/
 void BrainTumourSegmentation::addToWindow()
 {
 	QAction *act = qobject_cast<QAction *>(sender());
@@ -222,12 +274,14 @@ void BrainTumourSegmentation::addToWindow()
 			if (rootItem != nullptr)
 			{
 				QString patientName = rootItem->text(0);
+				std::vector<bts::EvaluatedSlice> evaluatedSlices;
 				int patientIdx = bts::getPatientByName(patients, patientName.toStdString());
 				if (patientIdx != -1)
 				{
 					bts::Patient patient = patients.at(patientIdx);
 					QSlider *slider;
 					QLabel *label;
+					QLabel *labelResults;
 
 					float normalizationFactor;
 					std::vector<bts::Slice> slices;
@@ -236,7 +290,7 @@ void BrainTumourSegmentation::addToWindow()
 					{
 						if (ui.actionSegmented_Evaluated_data->isChecked())
 						{
-							std::vector<bts::EvaluatedSlice> evaluatedSlices = patient.getProcessedData(modality.toStdString())->getEvaluatedSlices();
+							evaluatedSlices = patient.getProcessedData(modality.toStdString())->getEvaluatedSlices();
 							if (evaluatedSlices.size() > 0)
 							{
 								slices.assign(evaluatedSlices.begin(), evaluatedSlices.end());
@@ -278,37 +332,57 @@ void BrainTumourSegmentation::addToWindow()
 						slider = ui.verticalSliderTL;
 						label = ui.labelTL;
 						slicesTL = slices;
+						eSlicesTL = evaluatedSlices;
 						nfTL = normalizationFactor;
+						ui.labelTitleTL->setText(patientName + ": " + modality);
+						labelResults = ui.labelResultsTL;
 					}
 					else if (QString::compare(act->objectName(), "TR") == 0)
 					{
 						slider = ui.verticalSliderTR;
 						label = ui.labelTR;
 						slicesTR = slices;
+						eSlicesTR = evaluatedSlices;
 						nfTR = normalizationFactor;
+						ui.labelTitleTR->setText(patientName + ": " + modality);
+						labelResults = ui.labelResultsTR;
 					}
 					else if (QString::compare(act->objectName(), "BL") == 0)
 					{
 						slider = ui.verticalSliderBL;
 						label = ui.labelBL;
 						slicesBL = slices;
+						eSlicesBL = evaluatedSlices;
 						nfBL = normalizationFactor;
+						ui.labelTitleBL->setText(patientName + ": " + modality);
+						labelResults = ui.labelResultsBL;
 					}
 					else if (QString::compare(act->objectName(), "BR") == 0)
 					{
 						slider = ui.verticalSliderBR;
 						label = ui.labelBR;
 						slicesBR = slices;
+						eSlicesBR = evaluatedSlices;
 						nfBR = normalizationFactor;
+						ui.labelTitleBR->setText(patientName + ": " + modality);
+						labelResults = ui.labelResultsBR;
 					}
+					labelResults->clear();
 
 					int sliceCount = patient.getOrginalData()->getSliceCount();
 					slider->setRange(1, sliceCount);
 					slider->setValue(sliceCount / 2);
 
 					// add initial slice into the selected window
-					cv::Mat img = slices.at(sliceCount / 2).getData();
+					bts::Slice slice = slices.at(sliceCount / 2);
+					cv::Mat img = slice.getData();
 
+					if (evaluatedSlices.size() > 0)
+					{
+						bts::EvaluatedSlice eSlice = evaluatedSlices.at(sliceCount / 2);
+						labelResults->setText("Dice: " + QString::number(eSlice.dice * 100.0, 'g', 2) + "% TP: " + QString::number(eSlice.TP) + " FP: " + QString::number(eSlice.FP) + " FN: " + QString::number(eSlice.FN));
+					}
+					
 					QImage imgIn = convertMatToQImage(img, normalizationFactor);
 					label->setPixmap(QPixmap::fromImage(imgIn));
 					label->setScaledContents(true);
@@ -336,7 +410,7 @@ void BrainTumourSegmentation::on_verticalSliderTL_valueChanged(int value)
 {
 	if (slicesTL.size() != 0)
 	{
-		changeImage(&slicesTL, ui.labelTL, value, nfTL);
+		changeImage(&slicesTL, &eSlicesTL, ui.labelTL, ui.labelResultsTL, value, nfTL);
 		// connect sliders
 		if (ui.actionConnect_sliders->isChecked())
 		{
@@ -355,7 +429,7 @@ void BrainTumourSegmentation::on_verticalSliderBL_valueChanged(int value)
 {
 	if (slicesBL.size() != 0)
 	{
-		changeImage(&slicesBL, ui.labelBL, value, nfBL);
+		changeImage(&slicesBL, &eSlicesBL, ui.labelBL, ui.labelResultsBL, value, nfBL);
 		// connect sliders
 		if (ui.actionConnect_sliders->isChecked())
 		{
@@ -374,7 +448,7 @@ void BrainTumourSegmentation::on_verticalSliderTR_valueChanged(int value)
 {
 	if (slicesTR.size() != 0)
 	{
-		changeImage(&slicesTR, ui.labelTR, value, nfTR);
+		changeImage(&slicesTR, &eSlicesTR, ui.labelTR, ui.labelResultsTR, value, nfTR);
 		// connect sliders
 		if (ui.actionConnect_sliders->isChecked())
 		{
@@ -393,7 +467,7 @@ void BrainTumourSegmentation::on_verticalSliderBR_valueChanged(int value)
 {
 	if (slicesBR.size() != 0)
 	{
-		changeImage(&slicesBR, ui.labelBR, value, nfBR);
+		changeImage(&slicesBR, &eSlicesBR, ui.labelBR, ui.labelResultsBR, value, nfBR);
 
 		// connect sliders
 		if (ui.actionConnect_sliders->isChecked())
@@ -410,16 +484,24 @@ void BrainTumourSegmentation::on_verticalSliderBR_valueChanged(int value)
 }
 
 
-void BrainTumourSegmentation::changeImage(std::vector<bts::Slice> *slices, QLabel *label, int value, float normalizationFactor)
+void BrainTumourSegmentation::changeImage(std::vector<bts::Slice> *slices, std::vector<bts::EvaluatedSlice> *eSlices, QLabel *labelImage, QLabel *labelResults, int value, float normalizationFactor)
 {
+	// change results
+	if (eSlices->size() > 0)
+	{
+		bts::EvaluatedSlice eSlice = eSlices->at(value - 1);
+		labelResults->setText("Dice: " + QString::number(eSlice.dice * 100.0, 'g', 4) + "% TP: " + QString::number(eSlice.TP) + " FP: " + QString::number(eSlice.FP) + " FN: " + QString::number(eSlice.FN));
+		labelResults->repaint();
+		labelResults->repaint();
+	}
+	
+	// change image
 	cv::Mat img = slices->at(value - 1).getData();
 
 	QImage imgIn = convertMatToQImage(img, normalizationFactor);
-	//img.convertTo(img, CV_8UC1, normalizationFactor * 255);
-	//QImage imgIn = QImage((uchar*)img.data, img.cols, img.rows, img.step, QImage::Format_Grayscale8);
 
-	label->setPixmap(QPixmap::fromImage(imgIn));
-	label->setScaledContents(true);
+	labelImage->setPixmap(QPixmap::fromImage(imgIn));
+	labelImage->setScaledContents(true);
 
 	ui.statusBar->showMessage(QString::number(value));
 }
@@ -431,9 +513,6 @@ void BrainTumourSegmentation::on_actionThreshold_triggered()
 	thresholdWin.exec();
 
 	fillTreeWidget(patients);
-	// TODO need to repaint the tree
-	// prerob to tak ze spravis funkciu, ktora ti vykresli tree a nie rozhadzene v open trigger
-	// a potom to tu zavolaj odovzdas mu patients a normalne to rovnako spravis nemalo by to byt problem
 }
 
 void BrainTumourSegmentation::fillTreeWidget(std::vector<bts::Patient> patients)
@@ -463,4 +542,119 @@ void BrainTumourSegmentation::fillTreeWidget(std::vector<bts::Patient> patients)
 		}
 
 	}
+}
+void BrainTumourSegmentation::on_actionShow_results_triggered()
+{
+	ResultWindow resultWin(patients);
+	resultWin.setModal(false);
+	resultWin.exec();
+}
+
+void BrainTumourSegmentation::on_actionImage_arithm_triggered()
+{
+	ImageArithmWindow imgArithmWin(patients);
+	imgArithmWin.setModal(true);
+	imgArithmWin.exec();
+
+	fillTreeWidget(patients);
+}
+
+void BrainTumourSegmentation::on_actionDo_the_segmentation_triggered()
+{
+	// TODO dočasné, neskôr spravit okno s vyberom pacienta a modality, iba orginalne data
+	std::vector<bts::Slice> slices = patients.at(0).getOrginalData()->getSlices(bts::modalityMap["Flair"]);
+	// TODO mozno by bolo dobre najprv spravit korekciu a robit to natom
+	// TODO mozno aj to morfologické otvorenie
+
+	float maxIntensity = patients.at(0).getOrginalData()->getGlobalIntensityMax();
+	// Sprav threshold
+	std::vector<bts::Slice> segmentedSlices = bts::doOptimalThreshold(slices, 10, 1.5, 25, 1 / (float)maxIntensity, true);
+
+	// Z thresholdu vypočítaj centroid a iné
+	long x = 0, y = 0, z = 0;
+	int count = 0;
+	float intensity = 0.0;
+
+	for (int i = 0; i < segmentedSlices.size(); i++)
+	{
+		bts::Slice slice = segmentedSlices.at(i);
+		bts::Slice orgSlice = slices.at(i);
+		for (int j = 0; j < 240; j++)
+		{
+			for (int k = 0; k < 240; k++)
+			{
+				if (slice.getData().at<float>(j, k) == 1)
+				{
+					count++;
+					x += k;
+					y += j;
+					z += i;
+					intensity += orgSlice.getData().at<unsigned short>(j, k);
+				}
+			}
+		}
+	}
+	x /= count;
+	y /= count;
+	z /= count;
+	intensity /= (float)count;
+	//intensity /= (float)maxIntensity;
+
+	// Prejdi všetky voxely a vypočítaj špeciálnu vzdialenosť od centroidu
+	std::vector<bts::Slice> processedSlices;
+	for (int i = 0; i < segmentedSlices.size(); i++)
+	{
+		bts::Slice slice = slices.at(i);
+		cv::Mat outputImage = slice.getData();
+		outputImage.convertTo(outputImage, CV_32F);
+		for (int j = 0; j < 240; j++)
+		{
+			for (int k = 0; k < 240; k++)
+			{
+				float xyzDif = sqrt(pow(x - k, 2) + pow(y - j, 2) + pow(z - i, 2));
+				float intDif = (intensity - slice.getData().at<unsigned short>(j, k))/maxIntensity;
+				float totalDif = xyzDif*2 + intDif*960;
+				
+
+				// Save results
+				if (totalDif < 100)
+				{
+					outputImage.at<float>(j, k) = 1.0;
+				}
+else
+{
+	outputImage.at<float>(j, k) = 0.0;
+}
+			}
+		}
+		//cv::imshow(std::to_string(i), outputImage);
+		slice.setData(outputImage);
+		processedSlices.push_back(slice);
+	}
+
+	bts::ProcessedData *processedData = new bts::ProcessedData();
+	processedData->setSlices(processedSlices);
+	processedData->setPatient(&patients.at(0));
+	processedData->setTitle("Segmentation");
+
+
+	// Evaluate the new processed data
+	std::vector<bts::Slice> slicesGT;
+	slicesGT = patients.at(0).getOrginalData()->getSlices(bts::modalityMap["GT"]);
+	processedData->evaluate(slicesGT);
+
+	std::vector<bts::ProcessedData> pd = patients.at(0).getProcessedData();
+	pd.push_back(*processedData);
+	patients.at(0).setProcessedData(pd);
+
+	fillTreeWidget(patients);
+}
+
+void BrainTumourSegmentation::on_actionComplex_segmentation_triggered()
+{
+	ComplexSegmentation imgArithmWin(patients);
+	imgArithmWin.setModal(true);
+	imgArithmWin.exec();
+
+	fillTreeWidget(patients);
 }

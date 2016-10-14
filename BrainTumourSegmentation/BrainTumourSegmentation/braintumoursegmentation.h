@@ -23,7 +23,7 @@ private slots:
 
 	void addToWindow();
 
-	void evaluate();
+	//void evaluate();
 
     void on_verticalSliderTL_valueChanged(int value);
 
@@ -35,6 +35,14 @@ private slots:
 
     void on_actionThreshold_triggered();
 
+    void on_actionShow_results_triggered();
+
+    void on_actionImage_arithm_triggered();
+
+    void on_actionDo_the_segmentation_triggered();
+
+    void on_actionComplex_segmentation_triggered();
+
 private:
 	Ui::BrainTumourSegmentationClass ui;
 	float nfTL = 1, nfTR = 1, nfBL = 1, nfBR = 1;
@@ -42,8 +50,9 @@ private:
 	// jednak treba spravit vector instancii
 	// a dedit od QVerticalSlider a doplnit ho o nf a slices
 	std::vector<bts::Slice> slicesTL, slicesTR, slicesBL, slicesBR;
+	std::vector<bts::EvaluatedSlice> eSlicesTL, eSlicesTR, eSlicesBL, eSlicesBR;
 
-	void changeImage(std::vector<bts::Slice> *slices, QLabel *label, int value, float normalizationFactor);
+	void changeImage(std::vector<bts::Slice> *slices, std::vector<bts::EvaluatedSlice> *eSlices, QLabel *labelImage, QLabel *labelResults, int value, float normalizationFactor);
 
 	void fillTreeWidget(std::vector<bts::Patient> patients);
 
