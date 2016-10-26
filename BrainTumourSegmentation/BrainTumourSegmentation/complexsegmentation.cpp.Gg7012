@@ -1,0 +1,68 @@
+#include "complexsegmentation.h"
+#include "ui_complexsegmentation.h"
+
+/*ComplexSegmentation::ComplexSegmentation(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::ComplexSegmentation)
+{
+    ui->setupUi(this);
+}
+*/
+
+ComplexSegmentation::ComplexSegmentation(std::vector<bts::Patient> &patients) :
+ui(new Ui::ComplexSegmentation),
+patients(&patients)
+{
+	ui->setupUi(this);
+
+	if (patients.size() == 0)
+	{
+		return;
+	}
+
+	// set up combobox
+	QStringList patientList;
+	for each (bts::Patient patient in patients)
+	{
+		patientList.push_back(QString::fromStdString(patient.getPatientId()));
+	}
+	ui->patientComboBox->addItems(patientList);
+
+	currentPatient = &(patients.at(0));
+}
+
+ComplexSegmentation::~ComplexSegmentation()
+{
+    delete ui;
+}
+
+void ComplexSegmentation::on_buttonBox_accepted()
+{
+	// get slices of Flair modality
+	std::vector<bts::Slice> slices = currentPatient->getOrginalData()->getSlices(bts::modalityMap["Flair"]);
+
+	// Do optimal thresholding
+	float maxIntensity = currentPatient->getOrginalData()->getGlobalIntensityMax();
+	std::vector<bts::Slice> segmentedSlices = bts::doOptimalThreshold(slices, 10, 1.5, 25, 1 / (float)maxIntensity, true);
+
+
+	//// Evaluate the new processed data
+	//std::vector<bts::Slice> slicesGT;
+	//slicesGT = currentPatient.getOrginalData()->getSlices(bts::modalityMap["GT"]);
+	//processedData->evaluate(slicesGT);
+
+	//// Store the processed data
+	//std::vector<bts::ProcessedData> pd = currentPatient.getProcessedData();
+	//pd.push_back(*processedData);
+	//currentPatient.setProcessedData(pd);
+}
+
+void ComplexSegmentation::on_patientComboBox_currentIndexChanged(int index)
+{
+	currentPatient = &(patients->at(index));
+}
+
+void ComplexSegmentation::on_patientComboBox_currentIndexChanged(const QString &arg1)
+{
+
+}
