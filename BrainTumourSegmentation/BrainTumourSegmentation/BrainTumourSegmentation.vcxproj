@@ -64,8 +64,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <ExecutablePath>$(OPENCV_ROOT)\x64\vc12\bin;$(VC_ExecutablePath_x64);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(FxCopDir);$(PATH);</ExecutablePath>
-    <IncludePath>$(OPENCV_ROOT)\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(OPENCV_ROOT)\x64\vc12\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);</LibraryPath>
+    <IncludePath>$(SITK_INC);$(OPENCV_ROOT)\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(SITK_LIB)\Debug;$(ITK_LIB)\Debug;$(OPENCV_ROOT)\x64\vc12\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
@@ -73,8 +73,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <ExecutablePath>$(OPENCV_ROOT)\x64\vc12\bin;$(VC_ExecutablePath_x64);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(FxCopDir);$(PATH);</ExecutablePath>
-    <IncludePath>$(OPENCV_ROOT)\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(OPENCV_ROOT)\x64\vc12\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);</LibraryPath>
+    <IncludePath>D:\Libraries\SimpleITK-0.10.0\buildNew\include\SimpleITK-0.10;$(OPENCV_ROOT)\include;$(SITK_INC);$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>D:\Libraries\SimpleITK-0.10.0\buildNew\ITK-build\lib\Release;D:\Libraries\SimpleITK-0.10.0\buildNew\SimpleITK-build\lib\Release;$(SITK_LIB)\Release;$(ITK_LIB)\Release;$(OPENCV_ROOT)\x64\vc12\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -96,7 +96,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PreprocessorDefinitions>UNICODE;WIN32;WIN64;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Libraries\SimpleITK-0.10.0\build\include\SimpleITK-0.10;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -107,7 +107,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;opencv_world310d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SimpleITKCommon-0.10.lib;SimpleITKIO-0.10.lib;SimpleITKRegistration-0.10.lib;SimpleITKBasicFilters0-0.10.lib;SimpleITKBasicFilters1-0.10.lib;SimpleITKBasicFilters2-0.10.lib;SimpleITKBasicFilters3-0.10.lib;SimpleITKBasicFilters4-0.10.lib;SimpleITKBasicFilters5-0.10.lib;SimpleITKBasicFilters6-0.10.lib;SimpleITKBasicFilters7-0.10.lib;SimpleITKBasicFilters8-0.10.lib;SimpleITKBasicFilters9-0.10.lib;SimpleITKBasicFilters10-0.10.lib;SimpleITKBasicFilters11-0.10.lib;SimpleITKBasicFilters12-0.10.lib;SimpleITKBasicFilters13-0.10.lib;SimpleITKExplicit-0.10.lib;ITKDICOMParser-4.10.lib;ITKIOCSV-4.10.lib;ITKIOHDF5-4.10.lib;ITKIOLSM-4.10.lib;ITKIOMRC-4.10.lib;ITKIOMesh-4.10.lib;ITKgiftiio-4.10.lib;ITKOptimizersv4-4.10.lib;ITKReview-4.10.lib;ITKLabelMap-4.10.lib;ITKQuadEdgeMesh-4.10.lib;ITKPolynomials-4.10.lib;ITKBiasCorrection-4.10.lib;ITKBioCell-4.10.lib;ITKIOSpatialObjects-4.10.lib;ITKIOXML-4.10.lib;ITKFEM-4.10.lib;ITKOptimizers-4.10.lib;ITKIOBMP-4.10.lib;ITKIOBioRad-4.10.lib;ITKIOGDCM-4.10.lib;itkgdcmMSFF-4.10.lib;itkgdcmDICT-4.10.lib;itkgdcmIOD-4.10.lib;ITKEXPAT-4.10.lib;itkgdcmDSED-4.10.lib;itkgdcmCommon-4.10.lib;crypt32.lib;itkgdcmjpeg8-4.10.lib;itkgdcmjpeg12-4.10.lib;itkgdcmjpeg16-4.10.lib;itkgdcmopenjpeg-4.10.lib;itkgdcmcharls-4.10.lib;rpcrt4.lib;ITKIOGE-4.10.lib;ITKIOGIPL-4.10.lib;ITKIOJPEG-4.10.lib;ITKIOTIFF-4.10.lib;itktiff-4.10.lib;itkjpeg-4.10.lib;ITKIOMeta-4.10.lib;ITKMetaIO-4.10.lib;comctl32.lib;ITKIONIFTI-4.10.lib;ITKniftiio-4.10.lib;ITKznz-4.10.lib;ITKIONRRD-4.10.lib;ITKNrrdIO-4.10.lib;ITKIOPNG-4.10.lib;itkpng-4.10.lib;ITKIOSiemens-4.10.lib;ITKIOIPL-4.10.lib;ITKIOStimulate-4.10.lib;ITKIOTransformHDF5-4.10.lib;itkhdf5_cpp-4.10.lib;itkhdf5-4.10.lib;itkzlib-4.10.lib;wsock32.lib;ITKIOTransformInsightLegacy-4.10.lib;ITKIOTransformMatlab-4.10.lib;ITKIOTransformBase-4.10.lib;ITKIOVTK-4.10.lib;ITKKLMRegionGrowing-4.10.lib;itkopenjpeg-4.10.lib;ITKVTK-4.10.lib;ITKWatersheds-4.10.lib;ITKStatistics-4.10.lib;itkNetlibSlatec-4.10.lib;ITKSpatialObjects-4.10.lib;ITKMesh-4.10.lib;ITKTransform-4.10.lib;ITKPath-4.10.lib;ITKVideoIO-4.10.lib;ITKIOImageBase-4.10.lib;ITKVideoCore-4.10.lib;ITKCommon-4.10.lib;itksys-4.10.lib;ws2_32.lib;Psapi.lib;itkdouble-conversion-4.10.lib;ITKVNLInstantiation-4.10.lib;itkvnl_algo-4.10.lib;itkvnl-4.10.lib;itkv3p_netlib-4.10.lib;itknetlib-4.10.lib;itkvcl-4.10.lib;qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;opencv_world310d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -139,7 +139,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;opencv_world310.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SimpleITKCommon-0.10.lib;SimpleITKIO-0.10.lib;SimpleITKRegistration-0.10.lib;SimpleITKBasicFilters0-0.10.lib;SimpleITKBasicFilters1-0.10.lib;SimpleITKBasicFilters2-0.10.lib;SimpleITKBasicFilters3-0.10.lib;SimpleITKBasicFilters4-0.10.lib;SimpleITKBasicFilters5-0.10.lib;SimpleITKBasicFilters6-0.10.lib;SimpleITKBasicFilters7-0.10.lib;SimpleITKBasicFilters8-0.10.lib;SimpleITKBasicFilters9-0.10.lib;SimpleITKBasicFilters10-0.10.lib;SimpleITKBasicFilters11-0.10.lib;SimpleITKBasicFilters12-0.10.lib;SimpleITKBasicFilters13-0.10.lib;SimpleITKExplicit-0.10.lib;ITKDICOMParser-4.10.lib;ITKIOCSV-4.10.lib;ITKIOHDF5-4.10.lib;ITKIOLSM-4.10.lib;ITKIOMRC-4.10.lib;ITKIOMesh-4.10.lib;ITKgiftiio-4.10.lib;ITKOptimizersv4-4.10.lib;ITKReview-4.10.lib;ITKLabelMap-4.10.lib;ITKQuadEdgeMesh-4.10.lib;ITKPolynomials-4.10.lib;ITKBiasCorrection-4.10.lib;ITKBioCell-4.10.lib;ITKIOSpatialObjects-4.10.lib;ITKIOXML-4.10.lib;ITKFEM-4.10.lib;ITKOptimizers-4.10.lib;ITKIOBMP-4.10.lib;ITKIOBioRad-4.10.lib;ITKIOGDCM-4.10.lib;itkgdcmMSFF-4.10.lib;itkgdcmDICT-4.10.lib;itkgdcmIOD-4.10.lib;ITKEXPAT-4.10.lib;itkgdcmDSED-4.10.lib;itkgdcmCommon-4.10.lib;crypt32.lib;itkgdcmjpeg8-4.10.lib;itkgdcmjpeg12-4.10.lib;itkgdcmjpeg16-4.10.lib;itkgdcmopenjpeg-4.10.lib;itkgdcmcharls-4.10.lib;rpcrt4.lib;ITKIOGE-4.10.lib;ITKIOGIPL-4.10.lib;ITKIOJPEG-4.10.lib;ITKIOTIFF-4.10.lib;itktiff-4.10.lib;itkjpeg-4.10.lib;ITKIOMeta-4.10.lib;ITKMetaIO-4.10.lib;comctl32.lib;ITKIONIFTI-4.10.lib;ITKniftiio-4.10.lib;ITKznz-4.10.lib;ITKIONRRD-4.10.lib;ITKNrrdIO-4.10.lib;ITKIOPNG-4.10.lib;itkpng-4.10.lib;ITKIOSiemens-4.10.lib;ITKIOIPL-4.10.lib;ITKIOStimulate-4.10.lib;ITKIOTransformHDF5-4.10.lib;itkhdf5_cpp-4.10.lib;itkhdf5-4.10.lib;itkzlib-4.10.lib;wsock32.lib;ITKIOTransformInsightLegacy-4.10.lib;ITKIOTransformMatlab-4.10.lib;ITKIOTransformBase-4.10.lib;ITKIOVTK-4.10.lib;ITKKLMRegionGrowing-4.10.lib;itkopenjpeg-4.10.lib;ITKVTK-4.10.lib;ITKWatersheds-4.10.lib;ITKStatistics-4.10.lib;itkNetlibSlatec-4.10.lib;ITKSpatialObjects-4.10.lib;ITKMesh-4.10.lib;ITKTransform-4.10.lib;ITKPath-4.10.lib;ITKVideoIO-4.10.lib;ITKIOImageBase-4.10.lib;ITKVideoCore-4.10.lib;ITKCommon-4.10.lib;itksys-4.10.lib;ws2_32.lib;Psapi.lib;itkdouble-conversion-4.10.lib;ITKVNLInstantiation-4.10.lib;itkvnl_algo-4.10.lib;itkvnl-4.10.lib;itkv3p_netlib-4.10.lib;itknetlib-4.10.lib;itkvcl-4.10.lib;qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;opencv_world310.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -209,7 +209,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing braintumoursegmentation.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB  "-ID:\Libraries\SimpleITK-0.10.0\build\include\SimpleITK-0.10" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing braintumoursegmentation.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
@@ -249,7 +249,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing complexsegmentation.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB  "-ID:\Libraries\SimpleITK-0.10.0\build\include\SimpleITK-0.10" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing complexsegmentation.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
@@ -272,7 +272,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing imagearithmwindow.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB  "-ID:\Libraries\SimpleITK-0.10.0\build\include\SimpleITK-0.10" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing imagearithmwindow.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
@@ -290,7 +290,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing resultwindow.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB  "-ID:\Libraries\SimpleITK-0.10.0\build\include\SimpleITK-0.10" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing resultwindow.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
@@ -308,7 +308,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing thresholdtoolwindow.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB  "-ID:\Libraries\SimpleITK-0.10.0\build\include\SimpleITK-0.10" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing thresholdtoolwindow.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
@@ -432,7 +432,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)" UicDir=".\GeneratedFiles" RccDir=".\GeneratedFiles" lupdateOptions="" lupdateOnBuild="0" lreleaseOptions="" Qt5Version_x0020_Win32="5.5" Qt5Version_x0020_x64="5.5" MocOptions="" />
+      <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)" UicDir=".\GeneratedFiles" RccDir=".\GeneratedFiles" lupdateOptions="" lupdateOnBuild="0" lreleaseOptions="" Qt5Version_x0020_Win32="5.5" Qt5Version_x0020_x64="Qt5.7" MocOptions="" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

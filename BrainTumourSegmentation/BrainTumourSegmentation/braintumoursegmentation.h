@@ -43,6 +43,8 @@ private slots:
 
     void on_actionComplex_segmentation_triggered();
 
+    void on_actionOpen_mha_mhd_files_triggered();
+
 private:
 	Ui::BrainTumourSegmentationClass ui;
 	float nfTL = 1, nfTR = 1, nfBL = 1, nfBR = 1;
@@ -57,6 +59,8 @@ private:
 	void fillTreeWidget(std::vector<bts::Patient> patients);
 
 	QImage convertMatToQImage(cv::Mat &img, float nf);
+
+	QString getModality(QString fileName);
 
 public:
 	std::vector<bts::Patient> patients;

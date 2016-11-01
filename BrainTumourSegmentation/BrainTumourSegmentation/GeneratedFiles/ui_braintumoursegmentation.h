@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'braintumoursegmentation.ui'
 **
-** Created by: Qt User Interface Compiler version 5.5.1
+** Created by: Qt User Interface Compiler version 5.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -20,6 +20,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
+#include <QtWidgets/QProgressBar>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
@@ -42,14 +43,14 @@ public:
     QAction *actionImage_arithm;
     QAction *actionDo_the_segmentation;
     QAction *actionComplex_segmentation;
+    QAction *actionOpen_mha_mhd_files;
     QWidget *centralWidget;
     QGridLayout *gridLayout_4;
-    QTreeWidget *treeWidget;
     QGridLayout *gridLayoutView;
     QFrame *line;
     QGridLayout *gridLayout;
-    QLabel *labelTL;
     QSlider *verticalSliderTL;
+    QLabel *labelTL;
     QLabel *labelTitleTL;
     QLabel *labelResultsTL;
     QGridLayout *gridLayout_5;
@@ -63,11 +64,13 @@ public:
     QLabel *labelTitleBL;
     QLabel *labelResultsBL;
     QGridLayout *gridLayout_2;
+    QLabel *labelTitleTR;
     QSlider *verticalSliderTR;
     QLabel *labelTR;
-    QLabel *labelTitleTR;
     QLabel *labelResultsTR;
     QFrame *line_2;
+    QProgressBar *progressBar;
+    QTreeWidget *treeWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuTools;
@@ -117,24 +120,14 @@ public:
         actionDo_the_segmentation->setObjectName(QStringLiteral("actionDo_the_segmentation"));
         actionComplex_segmentation = new QAction(BrainTumourSegmentationClass);
         actionComplex_segmentation->setObjectName(QStringLiteral("actionComplex_segmentation"));
+        actionOpen_mha_mhd_files = new QAction(BrainTumourSegmentationClass);
+        actionOpen_mha_mhd_files->setObjectName(QStringLiteral("actionOpen_mha_mhd_files"));
         centralWidget = new QWidget(BrainTumourSegmentationClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         gridLayout_4 = new QGridLayout(centralWidget);
         gridLayout_4->setSpacing(6);
         gridLayout_4->setContentsMargins(11, 11, 11, 11);
         gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
-        treeWidget = new QTreeWidget(centralWidget);
-        QBrush brush(QColor(0, 0, 0, 255));
-        brush.setStyle(Qt::NoBrush);
-        QTreeWidgetItem *__qtreewidgetitem = new QTreeWidgetItem();
-        __qtreewidgetitem->setForeground(0, brush);
-        treeWidget->setHeaderItem(__qtreewidgetitem);
-        treeWidget->setObjectName(QStringLiteral("treeWidget"));
-        treeWidget->setMaximumSize(QSize(250, 100000));
-        treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-
-        gridLayout_4->addWidget(treeWidget, 0, 0, 1, 1);
-
         gridLayoutView = new QGridLayout();
         gridLayoutView->setSpacing(6);
         gridLayoutView->setObjectName(QStringLiteral("gridLayoutView"));
@@ -148,16 +141,16 @@ public:
         gridLayout = new QGridLayout();
         gridLayout->setSpacing(6);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        labelTL = new QLabel(centralWidget);
-        labelTL->setObjectName(QStringLiteral("labelTL"));
-
-        gridLayout->addWidget(labelTL, 1, 0, 1, 1);
-
         verticalSliderTL = new QSlider(centralWidget);
         verticalSliderTL->setObjectName(QStringLiteral("verticalSliderTL"));
         verticalSliderTL->setOrientation(Qt::Vertical);
 
         gridLayout->addWidget(verticalSliderTL, 1, 1, 1, 1);
+
+        labelTL = new QLabel(centralWidget);
+        labelTL->setObjectName(QStringLiteral("labelTL"));
+
+        gridLayout->addWidget(labelTL, 1, 0, 1, 1);
 
         labelTitleTL = new QLabel(centralWidget);
         labelTitleTL->setObjectName(QStringLiteral("labelTitleTL"));
@@ -229,6 +222,11 @@ public:
         gridLayout_2 = new QGridLayout();
         gridLayout_2->setSpacing(6);
         gridLayout_2->setObjectName(QStringLiteral("gridLayout_2"));
+        labelTitleTR = new QLabel(centralWidget);
+        labelTitleTR->setObjectName(QStringLiteral("labelTitleTR"));
+
+        gridLayout_2->addWidget(labelTitleTR, 0, 0, 1, 1);
+
         verticalSliderTR = new QSlider(centralWidget);
         verticalSliderTR->setObjectName(QStringLiteral("verticalSliderTR"));
         verticalSliderTR->setOrientation(Qt::Vertical);
@@ -239,11 +237,6 @@ public:
         labelTR->setObjectName(QStringLiteral("labelTR"));
 
         gridLayout_2->addWidget(labelTR, 1, 0, 1, 1);
-
-        labelTitleTR = new QLabel(centralWidget);
-        labelTitleTR->setObjectName(QStringLiteral("labelTitleTR"));
-
-        gridLayout_2->addWidget(labelTitleTR, 0, 0, 1, 1);
 
         labelResultsTR = new QLabel(centralWidget);
         labelResultsTR->setObjectName(QStringLiteral("labelResultsTR"));
@@ -262,6 +255,26 @@ public:
 
 
         gridLayout_4->addLayout(gridLayoutView, 0, 1, 2, 1);
+
+        progressBar = new QProgressBar(centralWidget);
+        progressBar->setObjectName(QStringLiteral("progressBar"));
+        progressBar->setValue(0);
+        progressBar->setInvertedAppearance(false);
+        progressBar->setTextDirection(QProgressBar::TopToBottom);
+
+        gridLayout_4->addWidget(progressBar, 2, 0, 1, 2);
+
+        treeWidget = new QTreeWidget(centralWidget);
+        QBrush brush(QColor(0, 0, 0, 255));
+        brush.setStyle(Qt::NoBrush);
+        QTreeWidgetItem *__qtreewidgetitem = new QTreeWidgetItem();
+        __qtreewidgetitem->setForeground(0, brush);
+        treeWidget->setHeaderItem(__qtreewidgetitem);
+        treeWidget->setObjectName(QStringLiteral("treeWidget"));
+        treeWidget->setMaximumSize(QSize(250, 100000));
+        treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+
+        gridLayout_4->addWidget(treeWidget, 0, 0, 2, 1);
 
         BrainTumourSegmentationClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(BrainTumourSegmentationClass);
@@ -285,6 +298,7 @@ public:
         menuBar->addAction(menuTools->menuAction());
         menuBar->addAction(menuAbout->menuAction());
         menuFile->addAction(actionOpen_image_s);
+        menuFile->addAction(actionOpen_mha_mhd_files);
         menuTools->addAction(actionThreshold);
         menuTools->addAction(actionImage_arithm);
         menuTools->addAction(actionSuperpixels);
@@ -324,8 +338,7 @@ public:
         actionImage_arithm->setText(QApplication::translate("BrainTumourSegmentationClass", "Image arithm", 0));
         actionDo_the_segmentation->setText(QApplication::translate("BrainTumourSegmentationClass", "Do the segmentation", 0));
         actionComplex_segmentation->setText(QApplication::translate("BrainTumourSegmentationClass", "Complex segmentation", 0));
-        QTreeWidgetItem *___qtreewidgetitem = treeWidget->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("BrainTumourSegmentationClass", "Image(s)", 0));
+        actionOpen_mha_mhd_files->setText(QApplication::translate("BrainTumourSegmentationClass", "Open mha/mhd file(s)", 0));
         labelTL->setText(QString());
         labelTitleTL->setText(QString());
         labelResultsTL->setText(QString());
@@ -335,9 +348,11 @@ public:
         labelBL->setText(QString());
         labelTitleBL->setText(QString());
         labelResultsBL->setText(QString());
-        labelTR->setText(QString());
         labelTitleTR->setText(QString());
+        labelTR->setText(QString());
         labelResultsTR->setText(QString());
+        QTreeWidgetItem *___qtreewidgetitem = treeWidget->headerItem();
+        ___qtreewidgetitem->setText(0, QApplication::translate("BrainTumourSegmentationClass", "Image(s)", 0));
         menuFile->setTitle(QApplication::translate("BrainTumourSegmentationClass", "File", 0));
         menuTools->setTitle(QApplication::translate("BrainTumourSegmentationClass", "Tools", 0));
         menuAbout->setTitle(QApplication::translate("BrainTumourSegmentationClass", "About", 0));

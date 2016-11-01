@@ -39,6 +39,14 @@ namespace bts
 
 	// Convertions
 	float *** convertSlicesTo3DArray(std::vector<Slice> slices);
+
+	// Calculate centroid of given data
+	cv::Point3i getCentroid(std::vector<Slice> slices);
+
+	// Growing region segmentation
+	std::vector<bts::Slice> growingRegion(std::vector<bts::Slice> mask, cv::Point3i seed, int connectivity);
+	
+	void doComplexSegmentation(Patient* patient);
 }
 
 

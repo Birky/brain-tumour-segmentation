@@ -39,9 +39,13 @@ Global
 		{378867AD-1FB0-4FD2-ABAB-49C3B2F89BA1}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{378867AD-1FB0-4FD2-ABAB-49C3B2F89BA1}.Release|Win32.ActiveCfg = Release|Win32
 		{378867AD-1FB0-4FD2-ABAB-49C3B2F89BA1}.Release|Win32.Build.0 = Release|Win32
-		{378867AD-1FB0-4FD2-ABAB-49C3B2F89BA1}.Release|x64.ActiveCfg = Release|Win32
+		{378867AD-1FB0-4FD2-ABAB-49C3B2F89BA1}.Release|x64.ActiveCfg = Release|x64
+		{378867AD-1FB0-4FD2-ABAB-49C3B2F89BA1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		Qt5Version = Qt5.7
 	EndGlobalSection
 EndGlobal

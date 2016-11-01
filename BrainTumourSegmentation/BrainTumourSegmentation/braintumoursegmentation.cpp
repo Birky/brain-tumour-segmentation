@@ -7,6 +7,10 @@
 #include <QListView>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <SimpleITK.h>
+#include <sitkMultiplyImageFilter.h>
+
+namespace sitk = itk::simple;
 
 BrainTumourSegmentation::BrainTumourSegmentation(QWidget *parent)
 : QMainWindow(parent)
@@ -25,14 +29,21 @@ void BrainTumourSegmentation::on_actionOpen_image_s_triggered()
 	QFileDialog fd;
 	fd.setFileMode(QFileDialog::DirectoryOnly);
 	fd.setOption(QFileDialog::DontUseNativeDialog, true);
-	fd.setDirectory("E:\\FIIT_ing\\2-semester\\DP1\\Datasets\\BRATS2015_Training\\BRATS2015_Training\\HGG_16PNG\\");
+	fd.setDirectory("D:\\FIIT\\2-semester\\DP1\\Datasets\\BRATS2015_Training\\BRATS2015_Training\\HGG_16PNG\\");
 
 	// get the list view of the fileDialog and set its selection mode to extended
 	QListView *l = fd.findChild<QListView*>("listView");
 	if (l) {
 		l->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	}
-	fd.exec();
+	QTreeView *t = fd.findChild<QTreeView*>();
+	if (t) {
+		t->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	}
+	if (fd.exec() != fd.Accepted)
+	{
+		return;
+	}
 
 	// get all png files from all selected dirs
 	foreach(const QModelIndex &index, l->selectionModel()->selectedRows()) // loop patients
@@ -55,6 +66,7 @@ void BrainTumourSegmentation::on_actionOpen_image_s_triggered()
 
 		QDir dir(dirPath);
 		dir.setNameFilters(QStringList() << "*.png" << "*.PNG"); // filter out only the png image files
+		
 
 		// get all png files
 		QFileInfoList fileInfoList = dir.entryInfoList();
@@ -382,7 +394,7 @@ void BrainTumourSegmentation::addToWindow()
 						bts::EvaluatedSlice eSlice = evaluatedSlices.at(sliceCount / 2);
 						labelResults->setText("Dice: " + QString::number(eSlice.dice * 100.0, 'g', 2) + "% TP: " + QString::number(eSlice.TP) + " FP: " + QString::number(eSlice.FP) + " FN: " + QString::number(eSlice.FN));
 					}
-					
+
 					QImage imgIn = convertMatToQImage(img, normalizationFactor);
 					label->setPixmap(QPixmap::fromImage(imgIn));
 					label->setScaledContents(true);
@@ -657,4 +669,167 @@ void BrainTumourSegmentation::on_actionComplex_segmentation_triggered()
 	imgArithmWin.exec();
 
 	fillTreeWidget(patients);
+}
+
+void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
+{
+	// Multiple directory selection
+	QFileDialog fd;
+	fd.setFileMode(QFileDialog::DirectoryOnly);
+	fd.setOption(QFileDialog::DontUseNativeDialog, true);
+	fd.setDirectory("D:\\FIIT\\2-semester\\DP1\\Datasets\\BRATS2015_Training\\BRATS2015_Training");
+
+	// get the list view of the fileDialog and set its selection mode to extended
+	QListView *l = fd.findChild<QListView*>("listView");
+	if (l) {
+		l->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	}
+	QTreeView *t = fd.findChild<QTreeView*>();
+	if (t) {
+		t->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	}
+	if (fd.exec() != fd.Accepted)
+	{
+		return;
+	}
+
+	int pbTotal = l->selectionModel()->selectedRows().size(), pbDone = 0;
+	float pbState = 0;
+	ui.progressBar->setValue(pbState);
+	ui.progressBar->repaint();
+
+	// get all png files from all selected dirs
+	foreach(const QModelIndex &index, l->selectionModel()->selectedRows()) // loop patients
+	{
+		// set up data structure for patient
+		bts::Patient* patient = new bts::Patient();
+		bts::MRData* inputData = new bts::MRData();
+		std::vector<bts::Slice> slices[bts::modalityCount];
+		patient->setOrginalData(inputData);
+
+		// Get directory name and full path
+		QString dirName = index.data(Qt::DisplayRole).toString();
+		QString dirPath = fd.directory().absoluteFilePath(dirName);
+
+		// fill patient by directory information
+		patient->setPatientId(dirName.toStdString());
+		patient->setDataFolder(dirPath.toStdString());
+
+		std::string message = "Loading slices of patient \"" + dirName.toStdString() + "\".";
+		ui.statusBar->showMessage(QString::fromStdString(message));
+
+		QDir patientDir(dirPath);
+		patientDir.setFilter(QDir::Dirs);
+		
+		QFileInfoList dirInfoList = patientDir.entryInfoList();
+		dirInfoList.removeFirst(); // remove .
+		dirInfoList.removeFirst(); // remove ..
+		foreach(const QFileInfo &dirInfo, dirInfoList) // loop modalities
+		{
+			QDir modalityDir(dirInfo.absoluteFilePath());
+			modalityDir.setNameFilters(QStringList() << "*.mha" << "*.mhd"); // filter out only the mha/mhd files
+
+			// Get all mha/mhd files
+			QFileInfoList fileInfoList = modalityDir.entryInfoList();
+			foreach(const QFileInfo &fileInfo, fileInfoList) // loop files
+			{
+				// load mha/mhd file and save it to cv::Mat
+				sitk::ImageFileReader reader;
+				QString fileName = fileInfo.fileName(); 
+				reader.SetFileName(fileInfo.absoluteFilePath().toStdString());
+				sitk::Image mri = reader.Execute();
+
+				// get modality
+				QString modality = getModality(fileName);
+				
+				// get slices
+				for (int i = 0; i < mri.GetDepth(); i++)
+				{
+					std::vector<unsigned int> size = mri.GetSize();
+					size[2] = 1; // co-axial slicing, the depth(z) is set to 1
+					std::vector<int> index(3, 0);
+					index[2] = i;
+					sitk::Image slice = sitk::RegionOfInterest(mri, size, index);
+
+					if (slice.GetPixelIDValue() != sitk::sitkUInt16)
+					{
+						slice = sitk::Cast(slice, sitk::sitkUInt16);
+					}
+
+					bts::Slice* btsSlice = new bts::Slice(); 
+					// set the filePath
+					btsSlice->setFilePath(fileInfo.absoluteFilePath().toStdString());
+
+					// get slice number
+					btsSlice->setNumber(i);
+
+					// get slice data
+					cv::Mat ocvImage(slice.GetHeight(), slice.GetWidth(),
+						CV_16U, (void*)slice.GetBufferAsUInt16());
+					
+					if (ocvImage.data)
+					{
+						// set slice data
+						btsSlice->setData(ocvImage.clone());
+					}
+					
+					// push_back the new slice
+					slices[bts::modalityMap[modality.toStdString()]].push_back(*btsSlice);
+					
+					// set the slice count
+					inputData->setSliceCount(mri.GetDepth());
+				}
+			} 
+		}
+		// set modalities to MRIData
+		for (int i = 0; i < bts::modalityCount; i++)
+		{
+			inputData->setSlices(slices[i], i);
+		}
+
+		// calculate max intensities of all modalities
+		inputData->calculateMaxIntensities();
+
+		// store the patient into the list of patients
+		patients.push_back(*patient);
+		inputData->setPatient(&(patients.back()));
+
+		//********************************
+		// After loading do the segmentation too and evaluate
+		//********************************
+
+		bts::doComplexSegmentation(&(patients.back()));
+
+		// Set the progress bar
+		pbDone++;
+		pbState = pbDone / (float)pbTotal;
+		ui.progressBar->setValue(pbState * 100);
+		ui.progressBar->repaint();
+
+		// CLEAR BECAUSE NOT ENOUGH RAM
+		patients.clear();
+	}
+	
+	fillTreeWidget(patients);
+
+	ui.statusBar->showMessage(QString::fromStdString("Loading data of patient(s) is done."));
+}
+
+QString BrainTumourSegmentation::getModality(QString fileName)
+{
+	QStringList possibleModalities = (QStringList() << "Flair" << "T1c" << "T1" << "T2");
+	for (size_t i = 0; i < possibleModalities.size(); i++)
+	{
+		if (fileName.contains(possibleModalities.at(i)))
+		{
+			return possibleModalities.at(i);
+		}
+	}
+
+	if (fileName.contains("OT"))
+	{
+		return "GT";
+	}
+
+	return "UNKNOWN";
 }
