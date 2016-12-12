@@ -178,7 +178,7 @@ public:
         spinBoxFromTop->setObjectName(QStringLiteral("spinBoxFromTop"));
         spinBoxFromTop->setEnabled(false);
         spinBoxFromTop->setMaximum(100);
-        spinBoxFromTop->setValue(25);
+        spinBoxFromTop->setValue(50);
 
         formLayout_2->setWidget(2, QFormLayout::FieldRole, spinBoxFromTop);
 
@@ -187,7 +187,7 @@ public:
         doubleSpinBoxDistance->setEnabled(false);
         doubleSpinBoxDistance->setMaximum(100);
         doubleSpinBoxDistance->setSingleStep(0.5);
-        doubleSpinBoxDistance->setValue(1);
+        doubleSpinBoxDistance->setValue(1.5);
 
         formLayout_2->setWidget(1, QFormLayout::FieldRole, doubleSpinBoxDistance);
 

@@ -63,6 +63,19 @@
         <bool>true</bool>
        </property>
       </widget>
+      <widget class="QRadioButton" name="ANDradioButton">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>82</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>A AND B</string>
+       </property>
+      </widget>
      </widget>
     </item>
     <item row="0" column="1">

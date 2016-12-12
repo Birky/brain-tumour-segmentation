@@ -34,6 +34,7 @@ public:
     QGridLayout *gridLayout;
     QGroupBox *groupBox;
     QRadioButton *substractionRadioButton;
+    QRadioButton *ANDradioButton;
     QGroupBox *groupBox_2;
     QGroupBox *groupBox_3;
     QWidget *formLayoutWidget;
@@ -73,6 +74,9 @@ public:
         substractionRadioButton->setObjectName(QStringLiteral("substractionRadioButton"));
         substractionRadioButton->setGeometry(QRect(10, 30, 151, 17));
         substractionRadioButton->setChecked(true);
+        ANDradioButton = new QRadioButton(groupBox);
+        ANDradioButton->setObjectName(QStringLiteral("ANDradioButton"));
+        ANDradioButton->setGeometry(QRect(10, 50, 82, 17));
 
         gridLayout->addWidget(groupBox, 0, 0, 1, 1);
 
@@ -152,6 +156,7 @@ public:
         ImageArithmWindow->setWindowTitle(QApplication::translate("ImageArithmWindow", "Image arithm", 0));
         groupBox->setTitle(QApplication::translate("ImageArithmWindow", "Operations for two images", 0));
         substractionRadioButton->setText(QApplication::translate("ImageArithmWindow", "Substraction A - B", 0));
+        ANDradioButton->setText(QApplication::translate("ImageArithmWindow", "A AND B", 0));
         groupBox_2->setTitle(QApplication::translate("ImageArithmWindow", "Operations for one image", 0));
         groupBox_3->setTitle(QApplication::translate("ImageArithmWindow", "Select first image (A):", 0));
         patientALabel->setText(QApplication::translate("ImageArithmWindow", "Patient:", 0));

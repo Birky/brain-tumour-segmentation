@@ -73,7 +73,9 @@ void ImageArithmWindow::on_buttonBox_accepted()
 	{
 		// get modality
 		int modalityIndex = bts::modalityMap[ui->slicesAComboBox->currentText().toStdString()];
-		nfA = 1 / float(currentPatientA->getOrginalData()->getGlobalIntensityMax());
+		//nfA = 1 / float(currentPatientA->getOrginalData()->getGlobalIntensityMax());
+		// TODO
+		nfA = 1 / float(currentPatientA->getOrginalData()->getIntensityMax(ui->slicesAComboBox->currentText().toStdString()));
 		slicesA = currentPatientA->getOrginalData()->getSlices(modalityIndex);
 	}
 	else // processed data
@@ -89,7 +91,9 @@ void ImageArithmWindow::on_buttonBox_accepted()
 	{
 		// get modality
 		int modalityIndex = bts::modalityMap[ui->slicesBComboBox->currentText().toStdString()];
-		nfB = 1 / float(currentPatientB->getOrginalData()->getGlobalIntensityMax());
+		//nfB = 1 / float(currentPatientB->getOrginalData()->getGlobalIntensityMax());
+		// TODO
+		nfB = 1 / float(currentPatientB->getOrginalData()->getIntensityMax(ui->slicesAComboBox->currentText().toStdString()));
 		slicesB = currentPatientB->getOrginalData()->getSlices(modalityIndex);
 	}
 	else // processed data
@@ -107,7 +111,12 @@ void ImageArithmWindow::on_buttonBox_accepted()
 		processedData->setSlices(slicesResult);
 		processedData->setTitle("Subtract " + ui->slicesAComboBox->currentText().toStdString() + " - " + ui->slicesBComboBox->currentText().toStdString()); // TODO prerob aby sme vedeli aj pacienta, ale mozno by bolo dobre dovolit operacie len medzi jednym pacientom
 	}
-	//else if ()
+else if (ui->ANDradioButton->isChecked())
+{
+	slicesResult = bts::logicalAND(slicesA, slicesB);
+	processedData->setSlices(slicesResult);
+	processedData->setTitle("AND " + ui->slicesAComboBox->currentText().toStdString() + " - " + ui->slicesBComboBox->currentText().toStdString()); 
+}
 
 	// set the processedData to the currentPatient // TODO prerobit okno aby bolo mozne vybrat len jedneho pacienta
 	std::vector<bts::ProcessedData> pd = currentPatientA->getProcessedData();

@@ -19,11 +19,11 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 		return;
 	}
 	// Create result file
-	std::string resultPath = "data\\" + this->patient->getPatientId() + ".csv";
+	std::string resultPath = "data\\thresh_only\\" + this->patient->getPatientId() + ".csv";
 	std::ofstream resultFile(resultPath);
 	resultFile << "Dice,Jaccard,TP,FP,TN,FN\n";
 	long tTP = 0, tFP = 0, tFN = 0, tTN = 0;
-	float tDice, tJaccard;
+	float tDice = 0, tJaccard = 0;
 	for (int i = 0; i < this->slices.size(); i++)
 	{
 		EvaluatedSlice eSlice;
@@ -109,7 +109,7 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 
 
 	// Create TOTAL result file
-	resultPath = "data\\Totals.csv";
+	resultPath = "data\\thresh_only\\Totals.csv";
 	std::ofstream fileTotal(resultPath, std::ios_base::app);
 	resultFile << "Name,Dice,Jaccard,TP,FP,TN,FN\n";
 	// Save total separetely

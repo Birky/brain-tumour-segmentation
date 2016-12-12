@@ -57,6 +57,7 @@ void ThresholdToolWindow::on_pushButtonOK_clicked()
 		int modalityIndex = bts::modalityMap[ui->comboBoxSlices->currentText().toStdString()];
 		processedData->setModality(modalityIndex);
 		nf = 1 / float(currentPatient->getOrginalData()->getIntensityMax(modalityIndex)); // TODO použi lokálne èi globálne? toto treba zvlast na tomto window implementovat
+		//nf = 1 / float(currentPatient->getOrginalData()->getGlobalIntensityMax());
 		slices = currentPatient->getOrginalData()->getSlices(modalityIndex);
 	}
 	else // processed data

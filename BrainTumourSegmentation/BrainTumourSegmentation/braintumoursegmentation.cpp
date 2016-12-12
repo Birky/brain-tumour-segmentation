@@ -771,6 +771,12 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 					{
 						// set slice data
 						btsSlice->setData(ocvImage.clone());
+
+						//TODO len docasne pre uloženie png
+						if (i == 82 && modality.compare("Flair") == 0)
+						{
+							imwrite("D:\\FIIT\\2-semester\\DP1\\MATLAB\\pat24_flair83.png", ocvImage);
+						}
 					}
 					
 					// push_back the new slice
@@ -793,12 +799,14 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 		// store the patient into the list of patients
 		patients.push_back(*patient);
 		inputData->setPatient(&(patients.back()));
+		inputData->setPatient(patient);
 
 		//********************************
 		// After loading do the segmentation too and evaluate
 		//********************************
 
 		bts::doComplexSegmentation(&(patients.back()));
+		//bts::doComplexSegmentation(patient);
 
 		// Set the progress bar
 		pbDone++;
@@ -807,7 +815,9 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 		ui.progressBar->repaint();
 
 		// CLEAR BECAUSE NOT ENOUGH RAM
-		patients.clear();
+		//free(inputData);
+		//free(patient);
+		//patients.clear();
 	}
 	
 	fillTreeWidget(patients);

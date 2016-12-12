@@ -36,6 +36,7 @@ namespace bts
 
 	// Image(s) arithmetic operations
 	std::vector<Slice> substruct(std::vector<Slice> slicesA, std::vector<Slice> slicesB, float nfA, float nfB);
+	std::vector<Slice> logicalAND(std::vector<Slice> slicesA, std::vector<Slice> slicesB);
 
 	// Convertions
 	float *** convertSlicesTo3DArray(std::vector<Slice> slices);

@@ -6,6 +6,23 @@
 
 namespace bts
 {
+	std::vector<Slice> logicalAND(std::vector<Slice> slicesA, std::vector<Slice> slicesB)
+	{
+		for (int i = 0; i < slicesA.size(); i++)
+		{
+			cv::Mat imgA = slicesA.at(i).getData();
+			cv::Mat imgB = slicesB.at(i).getData();
+			cv::threshold(imgA, imgA, 0, 1, CV_THRESH_TOZERO);
+			cv::threshold(imgB, imgB, 0, 1, CV_THRESH_TOZERO);
+			//imgA.convertTo(imgA, CV_32F, nfA);
+			//imgB.convertTo(imgB, CV_32F, nfB);
+			cv::Mat result;
+			cv::bitwise_and(imgA, imgB, result);
+			slicesA.at(i).setData(result);
+		}
+		return slicesA;
+	}
+
 	void doComplexSegmentation(Patient* patient)
 	{
 		// get slices of Flair modality
@@ -37,7 +54,8 @@ namespace bts
 		// Store the processed data
 		std::vector<bts::ProcessedData> pd = patient->getProcessedData();
 		pd.push_back(*processedData);
-		patient->setProcessedData(pd);
+		patient->setProcessedData(pd); 
+		//free(processedData);
 	}
 
 	std::vector<bts::Slice> growingRegion(std::vector<bts::Slice> mask, cv::Point3i seed, int connectivity)
