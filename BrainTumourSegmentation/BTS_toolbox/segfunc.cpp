@@ -3,9 +3,68 @@
 #include "Patient.h"
 #include <numeric>
 #include <algorithm> 
+#include <fstream>
+
 
 namespace bts
 {
+	void convertMhaToCNTKtxt(std::vector<bts::Patient> &patients, std::vector<bool> sequences) // TODO tie sekvencie eöte nejak prerobiù
+	{
+		// Teraz zoberieem len FLAIR a GT pre label
+		std::ofstream outfile;
+		outfile.open("train_flair_slices.txt", std::ios_base::app);
+
+		for each (Patient pat in patients)
+		{
+			std::vector<bts::Slice> flair = pat.getOrginalData()->getSlices(modalityMap["Flair"]);
+			std::vector<bts::Slice> gt = pat.getOrginalData()->getSlices(modalityMap["GT"]);
+
+			
+			for (int k = 0; k < gt.size(); k++)
+			{
+				outfile << "|labels ";
+				cv::Mat img = gt.at(k).getData();
+				//unsigned short *slice = (unsigned short*)img.data;
+				for (int j = 0; j < img.rows; j++){
+					for (int i = 0; i < img.cols; i++){
+						unsigned short value = img.at<unsigned short>(j, i);
+						//unsigned short value = slice[img.step * j + i];
+						if (value != 0)
+							outfile << 1 << " ";
+						else
+							outfile << 0 << " ";
+					}
+				}
+
+				outfile << "|features ";
+				img = flair.at(k).getData();
+				for (int j = 0; j < img.rows; j++){
+					for (int i = 0; i < img.cols; i++){
+						//unsigned short value = slice[img.step * j + i];
+						unsigned short value = img.at<unsigned short>(j, i);
+						outfile << value << " ";
+					}
+				}
+				outfile << "\n";
+			}
+
+		/*	outfile << "|features ";
+			for (int k = 0; k < flair.size(); k++)
+			{
+				cv::Mat img = flair.at(k).getData();
+				//unsigned short *slice = (unsigned short*)img.data;
+				for (int j = 0; j < img.rows; j++){
+					for (int i = 0; i < img.cols; i++){
+						//unsigned short value = slice[img.step * j + i];
+						unsigned short value = img.at<unsigned short>(j, i);
+						outfile << value << " ";
+					}
+				}
+			}
+			outfile << "\n";*/
+		}
+	}
+
 	std::vector<Slice> logicalAND(std::vector<Slice> slicesA, std::vector<Slice> slicesB)
 	{
 		for (int i = 0; i < slicesA.size(); i++)
@@ -29,12 +88,19 @@ namespace bts
 		std::vector<bts::Slice> slices = patient->getOrginalData()->getSlices(bts::modalityMap["Flair"]);
 
 		// Do optimal thresholding
-		float maxIntensity = patient->getOrginalData()->getGlobalIntensityMax();
+		//float maxIntensity = patient->getOrginalData()->getGlobalIntensityMax();
+		float maxIntensity = float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["Flair"]));
 
 		std::vector<bts::Slice> thresholdedSlices = bts::doOptimalThreshold(slices, 10, 1.5, 50, 1 / (float)maxIntensity, true);
 
 		// Calculate the seed/centroid
 		cv::Point3i centroid = bts::getCentroid(thresholdedSlices);
+
+		// Patch the seed
+		/*if (thresholdedSlices.at(centroid.z).getData().at<float>(centroid.y, centroid.x) != 1.0)
+		{
+			centroid = findNearestPositive(thresholdedSlices, centroid);
+		}*/
 
 		// Growing region
 		std::vector<bts::Slice> processedSlices = bts::growingRegion(thresholdedSlices, centroid, 0);
@@ -43,6 +109,7 @@ namespace bts
 		bts::ProcessedData *processedData = new bts::ProcessedData();
 		processedData->setSliceCount(slices.size());
 		processedData->setSlices(processedSlices); // TODO 
+		//processedData->setSlices(thresholdedSlices);
 		processedData->setPatient(patient);
 		processedData->setTitle("Complex segmentation: " + patient->getPatientId());
 
@@ -56,6 +123,56 @@ namespace bts
 		pd.push_back(*processedData);
 		patient->setProcessedData(pd); 
 		//free(processedData);
+	}
+
+	cv::Point3i findNearestPositive(std::vector<bts::Slice> mask, cv::Point3i centroid)
+	{
+		int width = mask.at(0).getData().cols;
+		int height = mask.at(0).getData().rows;
+		int *nxp, *nyp, *nzp;
+		int ncount;
+		// 4-neighbourhood in 3D
+		ncount = 6;
+		int nx[] = { -1, 0, 0, 0, 0, 1 };
+		int ny[] = { 0, 0, 0, -1, 1, 0 };
+		int nz[] = { 0, -1, 1, 0, 0, 0 };
+		nxp = nx;
+		nyp = ny;
+		nzp = nz;
+
+		std::vector<cv::Point3i> queue;
+		queue.push_back(centroid);
+		mask.at(centroid.z).getData().at<float>(centroid.y, centroid.x) = -1;
+
+		while (!queue.empty())
+		{
+			// get voxel from queue
+			cv::Point3i curVox = queue.front();
+			queue.erase(queue.begin());
+
+				for (int i = 0; i < ncount; i++)
+				{
+					cv::Point3i nPoint = cv::Point3i(curVox.x + nxp[i], curVox.y + nyp[i], curVox.z + nzp[i]);
+					float value = mask.at(nPoint.z).getData().at<float>(nPoint.y, nPoint.x);
+					if (nPoint.x < 0 || nPoint.x >= width ||
+						nPoint.y < 0 || nPoint.y >= height ||
+						nPoint.z < 0 || nPoint.z >= mask.size() ||
+						value == -1)
+					{
+						continue;
+					}
+
+					if (value == 1.0)
+					{
+						return nPoint;
+					}
+
+					queue.push_back(nPoint);
+					// mark as visited
+					mask.at(nPoint.z).getData().at<float>(nPoint.y, nPoint.x) = -1;
+				}
+			
+		}
 	}
 
 	std::vector<bts::Slice> growingRegion(std::vector<bts::Slice> mask, cv::Point3i seed, int connectivity)
@@ -422,6 +539,82 @@ namespace bts
 		slices.at(0).getData().at<float>(1, 1);
 
 		return data;
+	}
+
+	std::vector<Slice> calculateSuperpixels(std::vector<Slice> slices, float nf, int spxSize, float compactness, int iterations, bool enforceConnectivity)
+	{	
+		std::vector<Slice> processedSlices;
+
+		// gSLICr settings
+		gSLICr::objects::settings mySettings;
+		mySettings.img_size.x = slices.at(0).getData().cols;
+		mySettings.img_size.y = slices.at(0).getData().rows;
+		mySettings.spixel_size = spxSize;
+		mySettings.coh_weight = compactness;
+		mySettings.no_iters = iterations;
+		mySettings.color_space = gSLICr::CIELAB;
+		mySettings.seg_method = gSLICr::GIVEN_SIZE;
+		mySettings.do_enforce_connectivity = enforceConnectivity;
+	
+		// instantiate a core_engine
+		gSLICr::engines::core_engine* gSLICrEngine = new gSLICr::engines::core_engine(mySettings);
+
+		// gSLICr takes gSLICr::UChar4Image as input and out put
+		gSLICr::UChar4Image* inImg = new gSLICr::UChar4Image(mySettings.img_size, true, true);
+		gSLICr::UChar4Image* outImg = new gSLICr::UChar4Image(mySettings.img_size, true, true);
+		cv::Size s(mySettings.img_size.x, mySettings.img_size.y);
+
+		for (int i = 0; i < slices.size(); i++)
+		{
+			cv::Mat boundaryDrawFrame;
+			boundaryDrawFrame.create(s, CV_8UC1);
+			Slice slice = slices.at(i);
+			cv::Mat frame = slice.getData();
+
+			frame.convertTo(frame, CV_8UC1, nf * 255); // TODO str·came to presnosù
+
+			gSLICrLoadImage(frame, inImg);
+
+			gSLICrEngine->Process_Frame(inImg);
+
+			// TODO prerobit aby to vracalo masku
+
+			gSLICrEngine->Draw_Segmentation_Result(outImg);
+
+			gSLICrLoadImage(outImg, boundaryDrawFrame);
+
+			slice.setData(boundaryDrawFrame);
+			processedSlices.push_back(slice);
+		}
+		return processedSlices;
+	}
+
+	// Convert from cv::Mat to gSLICr::Uchar4Image
+	void gSLICrLoadImage(const cv::Mat& inimg, gSLICr::UChar4Image* outimg)
+	{
+		gSLICr::Vector4u* outimg_ptr = outimg->GetData(MEMORYDEVICE_CPU);
+
+		for (int y = 0; y < outimg->noDims.y; y++)
+		for (int x = 0; x < outimg->noDims.x; x++)
+		{
+			int idx = x + y * outimg->noDims.x;
+			outimg_ptr[idx].b = inimg.at<uchar>(y, x);
+			outimg_ptr[idx].g = inimg.at<uchar>(y, x);
+			outimg_ptr[idx].r = inimg.at<uchar>(y, x);
+		}
+	}
+
+	// Convert from gSLICr::Uchar4Image to cv::Mat
+	void gSLICrLoadImage(const gSLICr::UChar4Image* inimg, cv::Mat& outimg)
+	{
+		const gSLICr::Vector4u* inimg_ptr = inimg->GetData(MEMORYDEVICE_CPU);
+
+		for (int y = 0; y < inimg->noDims.y; y++)
+		for (int x = 0; x < inimg->noDims.x; x++)
+		{
+			int idx = x + y * inimg->noDims.x;
+			outimg.at<uchar>(y, x) = inimg_ptr[idx].b;
+		}
 	}
 }
 

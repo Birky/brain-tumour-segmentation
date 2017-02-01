@@ -5,6 +5,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 // if i include proccesseddata.h i get undeclared identifier modalityCount because of crossincluding can be fix with forward declaraction
+#include "D:/FIIT/GIT/Source/Repos/gSLICr/gSLICr-master/gSLICr_Lib/gSLICr.h"
 
 namespace bts
 {
@@ -46,8 +47,19 @@ namespace bts
 
 	// Growing region segmentation
 	std::vector<bts::Slice> growingRegion(std::vector<bts::Slice> mask, cv::Point3i seed, int connectivity);
+
+	// Fix seed when does not hit
+	cv::Point3i findNearestPositive(std::vector<bts::Slice> mask, cv::Point3i centroid);
 	
 	void doComplexSegmentation(Patient* patient);
+
+	// TODO prerobit
+	void convertMhaToCNTKtxt(std::vector<bts::Patient> &patients, std::vector<bool> sequences);
+
+	// Superpixelisation
+	std::vector<Slice> calculateSuperpixels(std::vector<Slice> slices, float nf, int spxSize, float compactness, int iterations, bool enforceConnectivity);
+	void gSLICrLoadImage(const cv::Mat& inimg, gSLICr::UChar4Image* outimg);
+	void gSLICrLoadImage(const gSLICr::UChar4Image* inimg, cv::Mat& outimg);
 }
 
 

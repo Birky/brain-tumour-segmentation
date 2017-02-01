@@ -1,14 +1,18 @@
+#define NOMINMAX // to avoid conflicts of macros: min and max
 #include "braintumoursegmentation.h"
 #include "thresholdtoolwindow.h"
 #include "resultwindow.h"
 #include "imagearithmwindow.h"
 #include "complexsegmentation.h"
+#include "superpixelisationwindow.h"
 #include <QFileDialog>
 #include <QListView>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <SimpleITK.h>
 #include <sitkMultiplyImageFilter.h>
+
+//#include "D:/FIIT/GIT/Source/Repos/gSLICr/gSLICr-master/gSLICr_Lib/gSLICr.h"
 
 namespace sitk = itk::simple;
 
@@ -411,6 +415,7 @@ QImage BrainTumourSegmentation::convertMatToQImage(cv::Mat &img, float nf)
 	case CV_16U:
 	case CV_32F:
 		img.convertTo(img, CV_8UC1, nf * 255);
+	case CV_8UC1:
 		return QImage((uchar*)img.data, img.cols, img.rows, img.step, QImage::Format_Grayscale8);
 	case CV_8UC3:
 		return QImage((uchar*)img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
@@ -580,7 +585,7 @@ void BrainTumourSegmentation::on_actionDo_the_segmentation_triggered()
 
 	float maxIntensity = patients.at(0).getOrginalData()->getGlobalIntensityMax();
 	// Sprav threshold
-	std::vector<bts::Slice> segmentedSlices = bts::doOptimalThreshold(slices, 10, 1.5, 25, 1 / (float)maxIntensity, true);
+	std::vector<bts::Slice> segmentedSlices = bts::doOptimalThreshold(slices, 10, 1.5, 50, 1 / (float)maxIntensity, true);
 
 	// Z thresholdu vypočítaj centroid a iné
 	long x = 0, y = 0, z = 0;
@@ -698,7 +703,7 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 	ui.progressBar->setValue(pbState);
 	ui.progressBar->repaint();
 
-	// get all png files from all selected dirs
+	// get all mha files from all selected dirs
 	foreach(const QModelIndex &index, l->selectionModel()->selectedRows()) // loop patients
 	{
 		// set up data structure for patient
@@ -720,7 +725,7 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 
 		QDir patientDir(dirPath);
 		patientDir.setFilter(QDir::Dirs);
-		
+
 		QFileInfoList dirInfoList = patientDir.entryInfoList();
 		dirInfoList.removeFirst(); // remove .
 		dirInfoList.removeFirst(); // remove ..
@@ -735,13 +740,13 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 			{
 				// load mha/mhd file and save it to cv::Mat
 				sitk::ImageFileReader reader;
-				QString fileName = fileInfo.fileName(); 
+				QString fileName = fileInfo.fileName();
 				reader.SetFileName(fileInfo.absoluteFilePath().toStdString());
 				sitk::Image mri = reader.Execute();
 
 				// get modality
 				QString modality = getModality(fileName);
-				
+
 				// get slices
 				for (int i = 0; i < mri.GetDepth(); i++)
 				{
@@ -756,7 +761,7 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 						slice = sitk::Cast(slice, sitk::sitkUInt16);
 					}
 
-					bts::Slice* btsSlice = new bts::Slice(); 
+					bts::Slice* btsSlice = new bts::Slice();
 					// set the filePath
 					btsSlice->setFilePath(fileInfo.absoluteFilePath().toStdString());
 
@@ -766,26 +771,26 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 					// get slice data
 					cv::Mat ocvImage(slice.GetHeight(), slice.GetWidth(),
 						CV_16U, (void*)slice.GetBufferAsUInt16());
-					
+
 					if (ocvImage.data)
 					{
 						// set slice data
 						btsSlice->setData(ocvImage.clone());
 
 						//TODO len docasne pre uloženie png
-						if (i == 82 && modality.compare("Flair") == 0)
+						/*if (i == 82 && modality.compare("Flair") == 0)
 						{
-							imwrite("D:\\FIIT\\2-semester\\DP1\\MATLAB\\pat24_flair83.png", ocvImage);
-						}
+						imwrite("D:\\FIIT\\2-semester\\DP1\\MATLAB\\pat24_flair83.png", ocvImage);
+						}*/
 					}
-					
+
 					// push_back the new slice
 					slices[bts::modalityMap[modality.toStdString()]].push_back(*btsSlice);
-					
+
 					// set the slice count
 					inputData->setSliceCount(mri.GetDepth());
 				}
-			} 
+			}
 		}
 		// set modalities to MRIData
 		for (int i = 0; i < bts::modalityCount; i++)
@@ -799,12 +804,10 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 		// store the patient into the list of patients
 		patients.push_back(*patient);
 		inputData->setPatient(&(patients.back()));
-		inputData->setPatient(patient);
 
 		//********************************
 		// After loading do the segmentation too and evaluate
-		//********************************
-
+		//*******************************
 		bts::doComplexSegmentation(&(patients.back()));
 		//bts::doComplexSegmentation(patient);
 
@@ -819,6 +822,10 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 		//free(patient);
 		//patients.clear();
 	}
+
+	// Convert 3D volume to txt format of CNTK
+	//std::vector<bool> sequences = { false, false, false, true };
+	//convertMhaToCNTKtxt(patients, sequences); // T1, T1c, T2, FLAIR
 	
 	fillTreeWidget(patients);
 
@@ -842,4 +849,12 @@ QString BrainTumourSegmentation::getModality(QString fileName)
 	}
 
 	return "UNKNOWN";
+}
+void BrainTumourSegmentation::on_actionSuperpixels_triggered()
+{
+	SuperpixelisationWindow superWin(patients);
+	superWin.setModal(true);
+	superWin.exec();
+
+	fillTreeWidget(patients);
 }

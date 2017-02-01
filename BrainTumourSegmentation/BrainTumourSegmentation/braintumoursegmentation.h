@@ -45,6 +45,8 @@ private slots:
 
     void on_actionOpen_mha_mhd_files_triggered();
 
+    void on_actionSuperpixels_triggered();
+
 private:
 	Ui::BrainTumourSegmentationClass ui;
 	float nfTL = 1, nfTR = 1, nfBL = 1, nfBR = 1;

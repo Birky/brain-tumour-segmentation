@@ -109,7 +109,7 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 
 
 	// Create TOTAL result file
-	resultPath = "data\\thresh_only\\Totals.csv";
+	resultPath = "data\\thresh_new_gr\\Totals.csv";
 	std::ofstream fileTotal(resultPath, std::ios_base::app);
 	resultFile << "Name,Dice,Jaccard,TP,FP,TN,FN\n";
 	// Save total separetely

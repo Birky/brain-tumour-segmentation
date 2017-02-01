@@ -86,6 +86,7 @@ void ThresholdToolWindow::on_pushButtonOK_clicked()
 		processedData->setSlices(bts::doThreshold(slices, thresholdValue, nf));
 		processingTitle +=  QString::number(thresholdValue).toStdString() + "]";
 	}
+
 	// set title of the processing
 	processedData->setTitle(processingTitle);
 

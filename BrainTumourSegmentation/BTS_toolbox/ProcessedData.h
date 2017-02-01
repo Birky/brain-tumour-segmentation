@@ -18,9 +18,8 @@ namespace bts
 		std::string title;
 		int sliceCount; // TODO asi zbytoèné staèí nám slices.size()
 		int modality; // modality index
-		std::vector<Slice> slices;
+		std::vector<Slice> slices; // storing the processed/segmentation data
 
-		// TODO vytvor funkciu pre evaluaciu
 		std::vector<EvaluatedSlice> evaluatedSlices;
 
 

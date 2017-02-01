@@ -80,14 +80,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExecutablePath>$(OPENCV_ROOT)\x64\vc12\bin;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(OPENCV_ROOT)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(OPENCV_ROOT)\x64\vc12\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(CUDA_PATH)\bin;$(OPENCV_ROOT)\x64\vc12\bin;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(CUDA_PATH)\include;$(OPENCV_ROOT)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(CUDA_PATH)\lib\x64;$(OPENCV_ROOT)\x64\vc12\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ExecutablePath>$(OPENCV_ROOT)\x64\vc12\bin;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(OPENCV_ROOT)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(OPENCV_ROOT)\x64\vc12\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(CUDA_PATH)\bin;$(OPENCV_ROOT)\x64\vc12\bin;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(CUDA_PATH)\include;$(OPENCV_ROOT)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(CUDA_PATH)\lib\x64;$(OPENCV_ROOT)\x64\vc12\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

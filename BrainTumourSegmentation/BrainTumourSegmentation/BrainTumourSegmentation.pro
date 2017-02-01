@@ -21,16 +21,19 @@ HEADERS += ./braintumoursegmentation.h \
     thresholdtoolwindow.h \
     resultwindow.h \
     imagearithmwindow.h \
-    complexsegmentation.h
+    complexsegmentation.h \
+    superpixelisationwindow.h
 SOURCES += ./main.cpp \
     ./braintumoursegmentation.cpp \
     thresholdtoolwindow.cpp \
     resultwindow.cpp \
     imagearithmwindow.cpp \
-    complexsegmentation.cpp
+    complexsegmentation.cpp \
+    superpixelisationwindow.cpp
 FORMS += ./braintumoursegmentation.ui \
     thresholdtoolwindow.ui \
     resultwindow.ui \
     imagearithmwindow.ui \
-    complexsegmentation.ui
+    complexsegmentation.ui \
+    superpixelisationwindow.ui
 RESOURCES += braintumoursegmentation.qrc
