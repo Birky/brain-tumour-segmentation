@@ -104,7 +104,7 @@ void SuperpixelisationWindow::on_buttonBox_accepted()
 	{
 		superpixelisationSpecificData();
 	}
-	// Get loaded all data
+	// Get all loaded data
 	else{
 		superpixelisationAllData();
 	}
@@ -149,20 +149,25 @@ void SuperpixelisationWindow::superpixelisationSpecificData()
 		slices = oldProcessedData.getSlices();
 	}
 
-	processedData->setSlices(bts::calculateSuperpixels(slices, nf, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked()));
-
-	// TODO zmazaù
-	/*std::vector<bts::Slice> aaa = processedData->getSlices();
-	for (int i = 0; i < aaa.size(); i++)
-	{
-		cv::imshow(std::to_string(i).c_str(),aaa.at(i).getData());
-	}*/
+	// wich features to calculate
+	std::vector<bool> features;
+	features.push_back(ui->checkBoxFeatures->isChecked());
+	features.push_back(ui->checkBoxIntHist->isChecked());
+	features.push_back(ui->checkBoxIntHistNeigh->isChecked());
+	features.push_back(ui->checkBoxEntropy->isChecked());
+	features.push_back(ui->checkBoxLoc->isChecked());
 	
+	std::vector<bts::Slice> gtSlices = currentPatient->getOrginalData()->getSlices(bts::modalityMap["GT"]);
+	// one sequence 3 times
+	//processedData->setSlices(bts::calculateSuperpixels(slices, gtSlices, nf, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
+	// 3 different sequences 
+	processedData->setSlices(bts::calculateSuperpixels(currentPatient, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
+
 	std::stringstream stream;
 	stream << std::fixed << std::setprecision(2) << ui->doubleSpinBoxCompactness->value();
 
 	processingTitle += "SPX:" +std::to_string(ui->spinBoxSPXSize->value());
-	processingTitle += " C:" + stream.str() + "\%D, ";
+	processingTitle += " C:" + stream.str();
 	processingTitle += " It:" + std::to_string(ui->spinBoxIterations->value());
 	processingTitle += " EC:" + QString::number(ui->checkBoxEnforceConnectivity->isChecked()).toStdString() + " ]";
 
@@ -186,6 +191,56 @@ void SuperpixelisationWindow::superpixelisationSpecificData()
 
 void SuperpixelisationWindow::superpixelisationAllData()
 {
+	// which features to calculate
+	std::vector<bool> features;
+	features.push_back(ui->checkBoxFeatures->isChecked());
+	features.push_back(ui->checkBoxIntHist->isChecked());
+	features.push_back(ui->checkBoxIntHistNeigh->isChecked());
+	features.push_back(ui->checkBoxEntropy->isChecked());
+	features.push_back(ui->checkBoxLoc->isChecked());
 
+	// Make the title of the processed data
+	std::string processingTitle = ui->comboBoxSlices->currentText().toStdString() + " SPX" + " [";
+	std::stringstream stream;
+	stream << std::fixed << std::setprecision(2) << ui->doubleSpinBoxCompactness->value();
+
+	processingTitle += "SPX:" + std::to_string(ui->spinBoxSPXSize->value());
+	processingTitle += " C:" + stream.str();
+	processingTitle += " It:" + std::to_string(ui->spinBoxIterations->value());
+	processingTitle += " EC:" + QString::number(ui->checkBoxEnforceConnectivity->isChecked()).toStdString() + " ]";
+
+
+	for (int i = 0; i < patients->size(); i++) // loop all patients
+	{
+		currentPatient = &patients->at(i);
+		std::vector<bts::Slice> slices;
+		bts::ProcessedData *processedData = new bts::ProcessedData();
+		float nf = 1.0;
+
+		// get modality
+		int modalityIndex = bts::modalityMap["Flair"]; // TODO sprav to aj pre ostatnÈ sekvencie
+		processedData->setModality(modalityIndex);
+		nf = 1 / float(currentPatient->getOrginalData()->getIntensityMax(modalityIndex));
+		slices = currentPatient->getOrginalData()->getSlices(modalityIndex);
+
+		std::vector<bts::Slice> gtSlices = currentPatient->getOrginalData()->getSlices(bts::modalityMap["GT"]);
+		processedData->setSlices(bts::calculateSuperpixels(slices, gtSlices, nf, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
+	
+		// set title of the processing
+		processedData->setTitle(processingTitle);
+
+		// set slice count
+		processedData->setSliceCount(slices.size());
+
+		// set patient for processedData
+		processedData->setPatient(currentPatient);
+
+		// set the processedData to the currentPatient
+		std::vector<bts::ProcessedData> pd = currentPatient->getProcessedData();
+		pd.push_back(*processedData);
+		currentPatient->setProcessedData(pd);
+	}
+
+	this->close();
 }
 

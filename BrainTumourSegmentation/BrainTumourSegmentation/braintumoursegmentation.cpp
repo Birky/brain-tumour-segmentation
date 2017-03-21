@@ -1,4 +1,9 @@
 #define NOMINMAX // to avoid conflicts of macros: min and max
+//#include <mutex>
+/*#define INT64_MAX    _I64_MAX
+#define INTMAX_MAX   INT64_MAX */// to avoid error in ratio.h
+//#include "stdint.h"
+//#include <cstdint>
 #include "braintumoursegmentation.h"
 #include "thresholdtoolwindow.h"
 #include "resultwindow.h"
@@ -11,6 +16,13 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <SimpleITK.h>
 #include <sitkMultiplyImageFilter.h>
+
+/*#include <functional>
+#include <thread>
+#include <iostream>*/
+//#include "CNTKLibrary.h"
+
+//using namespace CNTK;
 
 //#include "D:/FIIT/GIT/Source/Repos/gSLICr/gSLICr-master/gSLICr_Lib/gSLICr.h"
 
@@ -124,6 +136,14 @@ void BrainTumourSegmentation::on_actionOpen_image_s_triggered()
 	fillTreeWidget(patients);
 
 	ui.statusBar->showMessage(QString::fromStdString("Loading data of patient(s) is done."));
+
+
+	// TODO tu vyskúšaj CNTK model načítať
+	/*std::string modelPath = "D:\\CNTK\\repos\\CNTK\\Examples\\Image\\GettingStarted\\OutputBRATS\\Models\\MLP_BRATS_3S_16epochs";
+
+	std::wstring wstrModelPath(modelPath.begin(), modelPath.end());
+
+	CNTK::Function::LoadModel(wstrModelPath, CNTK::DeviceDescriptor::GPUDevice(1));*/
 }
 
 void BrainTumourSegmentation::on_pushButton_clicked()
@@ -808,7 +828,7 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 		//********************************
 		// After loading do the segmentation too and evaluate
 		//*******************************
-		bts::doComplexSegmentation(&(patients.back()));
+		//bts::doComplexSegmentation(&(patients.back()));
 		//bts::doComplexSegmentation(patient);
 
 		// Set the progress bar

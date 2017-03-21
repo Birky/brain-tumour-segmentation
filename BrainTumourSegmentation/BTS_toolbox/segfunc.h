@@ -44,6 +44,7 @@ namespace bts
 
 	// Calculate centroid of given data
 	cv::Point3i getCentroid(std::vector<Slice> slices);
+	cv::Point2i getCentroid(std::vector<cv::Point3i> superpixel);
 
 	// Growing region segmentation
 	std::vector<bts::Slice> growingRegion(std::vector<bts::Slice> mask, cv::Point3i seed, int connectivity);
@@ -57,9 +58,19 @@ namespace bts
 	void convertMhaToCNTKtxt(std::vector<bts::Patient> &patients, std::vector<bool> sequences);
 
 	// Superpixelisation
-	std::vector<Slice> calculateSuperpixels(std::vector<Slice> slices, float nf, int spxSize, float compactness, int iterations, bool enforceConnectivity);
+	std::vector<Slice> calculateSuperpixels(std::vector<Slice> slices, std::vector<Slice> gtSlices, float nf, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features);
+	std::vector<Slice> calculateSuperpixels(bts::Patient* patient, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features);
 	void gSLICrLoadImage(const cv::Mat& inimg, gSLICr::UChar4Image* outimg);
 	void gSLICrLoadImage(const gSLICr::UChar4Image* inimg, cv::Mat& outimg);
+	void gSLICrLoadImage(const gSLICr::IntImage* inimg, cv::Mat& outimg);
+	void gSLICrLoadImage(const cv::Mat& one, const cv::Mat& two, const cv::Mat& three, gSLICr::UChar4Image* outimg);
+
+	// Feature extraction
+	void calculateFeaturesOfSuperpixels(const Slice& slice, const cv::Mat& gt, const int* mask, int noSPX, float nf, cv::Point3i centroid, std::vector<bool> features, std::vector<std::vector<float>>& tumorousFeatures, long& nonTumour, float& overallSPXQuality);
+	bool isAllIntesitiesLess(int threshold, std::vector<cv::Point3i> superpixel);
+	bool isAllIntesitiesLess(int threshold, std::vector<cv::Point3i> superpixel, float percentage);
+	int isTumour(std::vector<cv::Point3i> superpixel, const cv::Mat& gt, bool calculateQuality, float& overallSPXQuality);
+	float entropy(int *histogram, int bins, int numel);
 }
 
 
