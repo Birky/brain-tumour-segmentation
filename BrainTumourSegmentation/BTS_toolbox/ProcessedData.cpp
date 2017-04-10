@@ -19,7 +19,7 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 		return;
 	}
 	// Create result file
-	std::string resultPath = "data\\thresh_only\\" + this->patient->getPatientId() + ".csv";
+	std::string resultPath = "data\\Deep_learning\\" + this->patient->getPatientId() + ".csv";
 	std::ofstream resultFile(resultPath);
 	resultFile << "Dice,Jaccard,TP,FP,TN,FN\n";
 	long tTP = 0, tFP = 0, tFN = 0, tTN = 0;
@@ -31,6 +31,7 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 		gtImg.convertTo(gtImg, CV_32F);
 		cv::threshold(gtImg, gtImg, 0, 1, CV_THRESH_BINARY);
 		cv::Mat img = slices.at(i).getData();
+		img.convertTo(img, CV_32F); //TODO added 28.3.
 		eSlice.setNumber(slices.at(i).getNumber());
 
 		cv::Mat and;

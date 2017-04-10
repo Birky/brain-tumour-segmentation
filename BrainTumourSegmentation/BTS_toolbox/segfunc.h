@@ -6,6 +6,7 @@
 #include "opencv2/highgui.hpp"
 // if i include proccesseddata.h i get undeclared identifier modalityCount because of crossincluding can be fix with forward declaraction
 #include "D:/FIIT/GIT/Source/Repos/gSLICr/gSLICr-master/gSLICr_Lib/gSLICr.h"
+#include <map>
 
 namespace bts
 {
@@ -17,6 +18,11 @@ namespace bts
 	{ "T2", 2 },
 	{ "Flair", 3 },
 	{ "GT", 4 } };
+
+	static const int sideSizes[] = { 6, 8, 12, 16, 24, 32 };
+	static const float compactnesses[] = { 0.00, 0.05, 0.20, 0.50 };
+	static int globalS = 0;
+	static int globalC = 0;
 
 	const int modalityCount = 5;
 	
@@ -59,7 +65,8 @@ namespace bts
 
 	// Superpixelisation
 	std::vector<Slice> calculateSuperpixels(std::vector<Slice> slices, std::vector<Slice> gtSlices, float nf, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features);
-	std::vector<Slice> calculateSuperpixels(bts::Patient* patient, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features);
+	//std::vector<Slice> calculateSuperpixels(bts::Patient* patient, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features);
+	std::vector<Slice> calculateSuperpixels(bts::Patient* patient, std::map<std::string, float> *configuration);
 	void gSLICrLoadImage(const cv::Mat& inimg, gSLICr::UChar4Image* outimg);
 	void gSLICrLoadImage(const gSLICr::UChar4Image* inimg, cv::Mat& outimg);
 	void gSLICrLoadImage(const gSLICr::IntImage* inimg, cv::Mat& outimg);

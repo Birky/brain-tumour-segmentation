@@ -226,6 +226,7 @@
     <addaction name="actionThreshold"/>
     <addaction name="actionImage_arithm"/>
     <addaction name="actionSuperpixels"/>
+    <addaction name="actionSPX_classification"/>
     <addaction name="actionShow_results"/>
     <addaction name="actionDo_the_segmentation"/>
     <addaction name="actionComplex_segmentation"/>
@@ -269,7 +270,7 @@
   </action>
   <action name="actionSuperpixels">
    <property name="text">
-    <string>Superpixels</string>
+    <string>SPX calculation</string>
    </property>
   </action>
   <action name="actionConnect_sliders">
@@ -343,6 +344,11 @@
   <action name="actionOpen_mha_mhd_files">
    <property name="text">
     <string>Open mha/mhd file(s)</string>
+   </property>
+  </action>
+  <action name="actionSPX_classification">
+   <property name="text">
+    <string>SPX classification</string>
    </property>
   </action>
  </widget>

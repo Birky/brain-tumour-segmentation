@@ -13,6 +13,7 @@ namespace bts
 	private:
 		std::string filePath;
 		cv::Mat data;
+		cv::Mat spxMask;
 		int number;
 
 	public:
@@ -24,6 +25,16 @@ namespace bts
 		void setFilePath(std::string file_path)
 		{
 			filePath = std::move(file_path);
+		}
+
+		cv::Mat getSpxMask() const
+		{
+			return spxMask;
+		}
+
+		void setSpxMask(cv::Mat data_org)
+		{
+			spxMask = std::move(data_org);
 		}
 
 		cv::Mat getData() const

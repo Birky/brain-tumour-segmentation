@@ -4,6 +4,8 @@
 #include <QDialog>
 #include "../BTS_toolbox/segfunc.h"
 #include "../BTS_toolbox/Patient.h"
+#include <fstream>
+#include "rapidxml.hpp"
 
 namespace Ui {
 class SuperpixelisationWindow;

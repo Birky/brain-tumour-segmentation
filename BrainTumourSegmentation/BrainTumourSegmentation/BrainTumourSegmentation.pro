@@ -22,18 +22,21 @@ HEADERS += ./braintumoursegmentation.h \
     resultwindow.h \
     imagearithmwindow.h \
     complexsegmentation.h \
-    superpixelisationwindow.h
+    superpixelisationwindow.h \
+    spxclassifier.h
 SOURCES += ./main.cpp \
     ./braintumoursegmentation.cpp \
     thresholdtoolwindow.cpp \
     resultwindow.cpp \
     imagearithmwindow.cpp \
     complexsegmentation.cpp \
-    superpixelisationwindow.cpp
+    superpixelisationwindow.cpp \
+    spxclassifier.cpp
 FORMS += ./braintumoursegmentation.ui \
     thresholdtoolwindow.ui \
     resultwindow.ui \
     imagearithmwindow.ui \
     complexsegmentation.ui \
-    superpixelisationwindow.ui
+    superpixelisationwindow.ui \
+    spxclassifier.ui
 RESOURCES += braintumoursegmentation.qrc

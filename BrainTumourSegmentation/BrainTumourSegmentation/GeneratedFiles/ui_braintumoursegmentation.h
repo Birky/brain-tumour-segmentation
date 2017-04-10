@@ -44,6 +44,7 @@ public:
     QAction *actionDo_the_segmentation;
     QAction *actionComplex_segmentation;
     QAction *actionOpen_mha_mhd_files;
+    QAction *actionSPX_classification;
     QWidget *centralWidget;
     QGridLayout *gridLayout_4;
     QGridLayout *gridLayoutView;
@@ -122,6 +123,8 @@ public:
         actionComplex_segmentation->setObjectName(QStringLiteral("actionComplex_segmentation"));
         actionOpen_mha_mhd_files = new QAction(BrainTumourSegmentationClass);
         actionOpen_mha_mhd_files->setObjectName(QStringLiteral("actionOpen_mha_mhd_files"));
+        actionSPX_classification = new QAction(BrainTumourSegmentationClass);
+        actionSPX_classification->setObjectName(QStringLiteral("actionSPX_classification"));
         centralWidget = new QWidget(BrainTumourSegmentationClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         gridLayout_4 = new QGridLayout(centralWidget);
@@ -302,6 +305,7 @@ public:
         menuTools->addAction(actionThreshold);
         menuTools->addAction(actionImage_arithm);
         menuTools->addAction(actionSuperpixels);
+        menuTools->addAction(actionSPX_classification);
         menuTools->addAction(actionShow_results);
         menuTools->addAction(actionDo_the_segmentation);
         menuTools->addAction(actionComplex_segmentation);
@@ -321,7 +325,7 @@ public:
         actionOpen_image_s->setText(QApplication::translate("BrainTumourSegmentationClass", "Open image(s)", 0));
         actionAuthor->setText(QApplication::translate("BrainTumourSegmentationClass", "Author", 0));
         actionThreshold->setText(QApplication::translate("BrainTumourSegmentationClass", "Threshold", 0));
-        actionSuperpixels->setText(QApplication::translate("BrainTumourSegmentationClass", "Superpixels", 0));
+        actionSuperpixels->setText(QApplication::translate("BrainTumourSegmentationClass", "SPX calculation", 0));
         actionConnect_sliders->setText(QApplication::translate("BrainTumourSegmentationClass", "Connect/disconnect sliders", 0));
 #ifndef QT_NO_TOOLTIP
         actionConnect_sliders->setToolTip(QApplication::translate("BrainTumourSegmentationClass", "Connect/disconnect sliders", 0));
@@ -339,6 +343,7 @@ public:
         actionDo_the_segmentation->setText(QApplication::translate("BrainTumourSegmentationClass", "Do the segmentation", 0));
         actionComplex_segmentation->setText(QApplication::translate("BrainTumourSegmentationClass", "Complex segmentation", 0));
         actionOpen_mha_mhd_files->setText(QApplication::translate("BrainTumourSegmentationClass", "Open mha/mhd file(s)", 0));
+        actionSPX_classification->setText(QApplication::translate("BrainTumourSegmentationClass", "SPX classification", 0));
         labelTL->setText(QString());
         labelTitleTL->setText(QString());
         labelResultsTL->setText(QString());

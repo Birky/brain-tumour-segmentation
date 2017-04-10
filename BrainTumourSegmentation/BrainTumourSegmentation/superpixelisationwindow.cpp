@@ -2,6 +2,7 @@
 #include "ui_superpixelisationwindow.h"
 #include <iomanip>
 
+
 /*SuperpixelisationWindow::SuperpixelisationWindow(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SuperpixelisationWindow)
@@ -33,6 +34,7 @@ patients(&patients)
 	fillSlicesComboBox(*currentPatient);
 
 	ui->comboBoxPatient->addItems(patientList);
+
 }
 
 SuperpixelisationWindow::~SuperpixelisationWindow()
@@ -158,10 +160,21 @@ void SuperpixelisationWindow::superpixelisationSpecificData()
 	features.push_back(ui->checkBoxLoc->isChecked());
 	
 	std::vector<bts::Slice> gtSlices = currentPatient->getOrginalData()->getSlices(bts::modalityMap["GT"]);
+
+	/*std::map<std::string, float> config = { { "compactness", ui->doubleSpinBoxCompactness->value() },
+											{ "spxSideSize", ui->spinBoxSPXSize->value() },
+											{ "iterations", ui->spinBoxIterations->value() },
+											{ "enforceConnectivity", ui->checkBoxEnforceConnectivity->isChecked() },
+											{ "features0", ui->checkBoxFeatures->isChecked() },// TODO mozno by bolo dobre pomenovat aj featrues a aj v calculateSuperpixels vynechat vector a posuvat to cez mapu
+											{ "features1", ui->checkBoxIntHist->isChecked() },
+											{ "features2", ui->checkBoxIntHistNeigh->isChecked() },
+											{ "features3", ui->checkBoxEntropy->isChecked() },
+											{ "features4", ui->checkBoxLoc->isChecked() } };*/
 	// one sequence 3 times
-	//processedData->setSlices(bts::calculateSuperpixels(slices, gtSlices, nf, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
+	//processedData->setSlices(bts::calculateSuperpixels(slices, gtSlices, nf, &config));
+	processedData->setSlices(bts::calculateSuperpixels(slices, gtSlices, nf, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
 	// 3 different sequences 
-	processedData->setSlices(bts::calculateSuperpixels(currentPatient, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
+	//processedData->setSlices(bts::calculateSuperpixels(currentPatient, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
 
 	std::stringstream stream;
 	stream << std::fixed << std::setprecision(2) << ui->doubleSpinBoxCompactness->value();
@@ -192,12 +205,22 @@ void SuperpixelisationWindow::superpixelisationSpecificData()
 void SuperpixelisationWindow::superpixelisationAllData()
 {
 	// which features to calculate
-	std::vector<bool> features;
+	/*std::vector<bool> features;
 	features.push_back(ui->checkBoxFeatures->isChecked());
 	features.push_back(ui->checkBoxIntHist->isChecked());
 	features.push_back(ui->checkBoxIntHistNeigh->isChecked());
 	features.push_back(ui->checkBoxEntropy->isChecked());
-	features.push_back(ui->checkBoxLoc->isChecked());
+	features.push_back(ui->checkBoxLoc->isChecked());*/
+
+	std::map<std::string, float> config = { { "compactness", ui->doubleSpinBoxCompactness->value() },
+	{ "spxSideSize", ui->spinBoxSPXSize->value() },
+	{ "iterations", ui->spinBoxIterations->value() },
+	{ "enforceConnectivity", ui->checkBoxEnforceConnectivity->isChecked() },
+	{ "features0", ui->checkBoxFeatures->isChecked() },// TODO mozno by bolo dobre pomenovat aj featrues a aj v calculateSuperpixels vynechat vector a posuvat to cez mapu
+	{ "features1", ui->checkBoxIntHist->isChecked() },
+	{ "features2", ui->checkBoxIntHistNeigh->isChecked() },
+	{ "features3", ui->checkBoxEntropy->isChecked() },
+	{ "features4", ui->checkBoxLoc->isChecked() }, };
 
 	// Make the title of the processed data
 	std::string processingTitle = ui->comboBoxSlices->currentText().toStdString() + " SPX" + " [";
@@ -218,19 +241,24 @@ void SuperpixelisationWindow::superpixelisationAllData()
 		float nf = 1.0;
 
 		// get modality
-		int modalityIndex = bts::modalityMap["Flair"]; // TODO sprav to aj pre ostatné sekvencie
+		int modalityIndex = bts::modalityMap["Flair"]; // TODO iba ak sa robi jednou sekvenciou
 		processedData->setModality(modalityIndex);
 		nf = 1 / float(currentPatient->getOrginalData()->getIntensityMax(modalityIndex));
 		slices = currentPatient->getOrginalData()->getSlices(modalityIndex);
 
 		std::vector<bts::Slice> gtSlices = currentPatient->getOrginalData()->getSlices(bts::modalityMap["GT"]);
-		processedData->setSlices(bts::calculateSuperpixels(slices, gtSlices, nf, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
-	
+		// one sequence 3 times
+		//processedData->setSlices(bts::calculateSuperpixels(slices, gtSlices, nf, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
+		// 3 different sequences 
+		//processedData->setSlices(bts::calculateSuperpixels(currentPatient, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
+		processedData->setSlices(bts::calculateSuperpixels(currentPatient, &config));
+
+
 		// set title of the processing
 		processedData->setTitle(processingTitle);
-
+		
 		// set slice count
-		processedData->setSliceCount(slices.size());
+		processedData->setSliceCount(processedData->getSlices().size());
 
 		// set patient for processedData
 		processedData->setPatient(currentPatient);

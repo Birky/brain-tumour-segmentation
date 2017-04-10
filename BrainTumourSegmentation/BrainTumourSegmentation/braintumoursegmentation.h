@@ -47,6 +47,8 @@ private slots:
 
     void on_actionSuperpixels_triggered();
 
+	void on_actionSPX_classification_triggered();
+
 private:
 	Ui::BrainTumourSegmentationClass ui;
 	float nfTL = 1, nfTR = 1, nfBL = 1, nfBR = 1;
@@ -66,7 +68,6 @@ private:
 
 public:
 	std::vector<bts::Patient> patients;
-
 };
 
 #endif // BRAINTUMOURSEGMENTATION_H

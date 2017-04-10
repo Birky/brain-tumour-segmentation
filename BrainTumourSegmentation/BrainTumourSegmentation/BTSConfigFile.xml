@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Superpixelisation>
+  <AllLoadedData>true</AllLoadedData>
+  <SpecificData>true</SpecificData>
+  <SuperpixelSideSize>16</SuperpixelSideSize>
+  <Compactness>0.05</Compactness>
+  <IterationNumber>5</IterationNumber>
+  <EnforceConnectivity>true</EnforceConnectivity>
+  <FeaturesCalculation>true</FeaturesCalculation>
+  <Features>
+    <IntesnityHistogramOfItself>true</IntesnityHistogramOfItself>
+    <IntensityHistogramWithNeighbors>true</IntensityHistogramWithNeighbors>
+    <Entropy>true</Entropy>
+    <Location>true</Location>
+  </Features>
+</Superpixelisation>

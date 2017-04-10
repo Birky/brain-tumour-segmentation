@@ -1,12 +1,8 @@
 #define NOMINMAX // to avoid conflicts of macros: min and max
-//#include <mutex>
-/*#define INT64_MAX    _I64_MAX
-#define INTMAX_MAX   INT64_MAX */// to avoid error in ratio.h
-//#include "stdint.h"
-//#include <cstdint>
 #include "braintumoursegmentation.h"
 #include "thresholdtoolwindow.h"
 #include "resultwindow.h"
+#include "spxclassifier.h"
 #include "imagearithmwindow.h"
 #include "complexsegmentation.h"
 #include "superpixelisationwindow.h"
@@ -16,15 +12,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <SimpleITK.h>
 #include <sitkMultiplyImageFilter.h>
-
-/*#include <functional>
-#include <thread>
-#include <iostream>*/
-//#include "CNTKLibrary.h"
-
-//using namespace CNTK;
-
-//#include "D:/FIIT/GIT/Source/Repos/gSLICr/gSLICr-master/gSLICr_Lib/gSLICr.h"
 
 namespace sitk = itk::simple;
 
@@ -875,6 +862,15 @@ void BrainTumourSegmentation::on_actionSuperpixels_triggered()
 	SuperpixelisationWindow superWin(patients);
 	superWin.setModal(true);
 	superWin.exec();
+
+	fillTreeWidget(patients);
+}
+
+void BrainTumourSegmentation::on_actionSPX_classification_triggered()
+{
+	SPXClassifier spxClassifierWin(patients);
+	spxClassifierWin.setModal(true);
+	spxClassifierWin.exec();
 
 	fillTreeWidget(patients);
 }

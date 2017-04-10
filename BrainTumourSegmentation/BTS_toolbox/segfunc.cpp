@@ -547,21 +547,55 @@ namespace bts
 		return data;
 	}
 
-	std::vector<Slice> calculateSuperpixels(bts::Patient* patient, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features)
+	//std::vector<Slice> calculateSuperpixels(bts::Patient* patient, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features)
+	std::vector<Slice> calculateSuperpixels(bts::Patient* patient, std::map<std::string, float> *configuration)
 	{
+		// Configuration variables with default values
+		float compactness = 0.05;
+		int spxSideSize = 16;
+		int iterations = 5;
+		bool enforceConnectivity = true;
+		std::vector<bool> features = {true/*calculateFeatures?*/, true/*MeanHistogram*/, true/*MeanHistogramWithNeighbours*/, true/*Entropy*/, true/*Location - Angle and Distance*/};
+
+		// Get and set selected configurations
+		float value;
+		std::map<std::string, float>::iterator it;
+		compactness = (it = configuration->find("compactness")) != configuration->end() ? it->second : compactness;
+		spxSideSize = (it = configuration->find("spxSideSize")) != configuration->end() ? it->second : spxSideSize;
+		iterations = (it = configuration->find("iterations")) != configuration->end() ? it->second : iterations;
+		enforceConnectivity = (it = configuration->find("enforceConnectivity")) != configuration->end() ? it->second : enforceConnectivity; // Dangerous, in case of precision, must be exact 0 for false
+		
+		int featuresCount = 4;
+		for (int i = 0; i <= featuresCount; i++)
+		{
+			features.at(i) = (it = configuration->find("features" + std::to_string(i))) != configuration->end() ? it->second : features.at(i);
+		}
+		
+
+		std::vector<Slice> processedSlices;
+
+// Only when evaluating the superpixel quality
+		for ( globalC = 0; globalC < 4; globalC++)
+		{
+			for ( globalS = 0; globalS < 2; globalS++)
+			{
+
+				compactness = compactnesses[globalC];
+				spxSideSize = sideSizes[globalS];
+
+		
+		// We leave out T1 sequence becuase it contains the less information about tumor
 		std::vector<bts::Slice> slicesFLAIR = patient->getOrginalData()->getSlices(bts::modalityMap["Flair"]);
 		std::vector<bts::Slice> slicesT1c = patient->getOrginalData()->getSlices(bts::modalityMap["T1c"]);
 		std::vector<bts::Slice> slicesT2 = patient->getOrginalData()->getSlices(bts::modalityMap["T2"]);
 		std::vector<bts::Slice> slicesGT = patient->getOrginalData()->getSlices(bts::modalityMap["GT"]);
 
-		// TODO vysk˙öaj glob·lny NF aj lok·lnym!!! a porovnaj kvalitu // glob·lny bol lepöÌ
-		float nf = patient->getOrginalData()->getGlobalIntensityMax();
+		// Getting local max value (per sequence) - in case of global max value the results are worse because of big intensity differences between different sequences
+		float nfFLAIR = 1 /  float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["Flair"]));
+		float nfT1c = 1 /  float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["T1c"]));
+		float nfT2 = 1 /  float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["T2"]));
 
-		/*float nfFLAIR = patient->getOrginalData()->getIntensityMax(bts::modalityMap["Flair"]);
-		float nfT1c = patient->getOrginalData()->getIntensityMax(bts::modalityMap["T1c"]);
-		float nfT2 = patient->getOrginalData()->getIntensityMax(bts::modalityMap["T2"]);*/
-
-		std::vector<Slice> processedSlices;
+		
 		std::vector<std::vector<float>> tumorousFeatures;
 		float overallSPXQuality = 0.0;
 		long nonTumour = 0;
@@ -570,11 +604,11 @@ namespace bts
 		gSLICr::objects::settings mySettings;
 		mySettings.img_size.x = slicesFLAIR.at(0).getData().cols;
 		mySettings.img_size.y = slicesFLAIR.at(0).getData().rows;
-		mySettings.spixel_size = spxSize;
+		mySettings.spixel_size = spxSideSize;
 		mySettings.coh_weight = compactness;
 		mySettings.no_iters = iterations;
-		mySettings.color_space = gSLICr::RGB;//gSLICr::CIELAB;
-		mySettings.seg_method = gSLICr::GIVEN_SIZE;
+		mySettings.color_space = gSLICr::CIELAB;//gSLICr::CIELAB; // TODO daù do GUI
+		mySettings.seg_method = gSLICr::GIVEN_SIZE; 
 		mySettings.do_enforce_connectivity = enforceConnectivity;
 
 		// instantiate a core_engine
@@ -595,9 +629,9 @@ namespace bts
 			cv::Mat frame2 = slicesT1c.at(i).getData();
 			cv::Mat frame3 = slicesT2.at(i).getData();
 
-			frame1.convertTo(frame1, CV_8UC1, nf * 255); // TODO str·came tu presnosù
-			frame2.convertTo(frame2, CV_8UC1, nf * 255); // TODO str·came tu presnosù
-			frame3.convertTo(frame3, CV_8UC1, nf * 255); // TODO str·came tu presnosù
+			frame1.convertTo(frame1, CV_8UC1, nfFLAIR * 255); // TODO str·came tu presnosù
+			frame2.convertTo(frame2, CV_8UC1, nfT1c * 255); // TODO str·came tu presnosù
+			frame3.convertTo(frame3, CV_8UC1, nfT2 * 255); // TODO str·came tu presnosù
 
 			gSLICrLoadImage(frame1, frame2, frame3, inImg);
 
@@ -607,12 +641,22 @@ namespace bts
 
 			gSLICrLoadImage(outImg, boundaryDrawFrame);
 
-			slice.setData(boundaryDrawFrame);
-			processedSlices.push_back(slice);
-
 			// Get the mask
 			const gSLICr::IntImage *mask = gSLICrEngine->Get_Seg_Res();
 			const int* mask_ptr = mask->GetData(MEMORYDEVICE_CPU);
+
+			cv::Mat maskMat;
+			maskMat.create(s, CV_32SC1);
+			for (int y = 0; y < mySettings.img_size.y; y++)
+			for (int x = 0; x < mySettings.img_size.x; x++)
+			{
+				int idx = x + y * mySettings.img_size.x;
+				maskMat.at<int>(y, x) = mask_ptr[idx];
+			}
+
+			slice.setData(boundaryDrawFrame);
+			slice.setSpxMask(maskMat);
+			processedSlices.push_back(slice);
 
 			// Calculate the features
 			if (features.at(0))
@@ -638,12 +682,17 @@ namespace bts
 
 				// TODO spraviù aj pre ostatÈ sekkvencie moûno staËÌ viackr·t zavolaù funkciu
 				// BuÔ to daj zvl·öù vöetky alebo rozöÌr dimenziu features
-				calculateFeaturesOfSuperpixels(slicesFLAIR.at(i), gtImage, mask_ptr, countSPX, nf, centroid, features, tumorousFeatures, nonTumour, overallSPXQuality);
+				calculateFeaturesOfSuperpixels(slicesFLAIR.at(i), gtImage, mask_ptr, countSPX, nfFLAIR, centroid, features, tumorousFeatures, nonTumour, overallSPXQuality);
 			}
 		}
-		return processedSlices; // TODO zmazat po kontrole kvalitz superpixelov
 
-		float multiplier = nonTumour / (float)tumorousFeatures.size() - 1;
+				}
+		}
+
+		//return processedSlices; // TODO zmazat po kontrole kvalitz superpixelov
+
+		//TODO len pre trÈnovaniec
+		/*float multiplier = nonTumour / (float)tumorousFeatures.size() - 1;
 		std::ofstream outfile;
 		outfile.open("superpixel_train_4features.txt", std::ios_base::app);
 		for (int i = 0; i < multiplier*tumorousFeatures.size(); i++)
@@ -655,9 +704,10 @@ namespace bts
 			}
 			outfile << "\n";
 		}
-		outfile.close();
+		outfile.close();*/
 
 		return processedSlices;
+	
 	}
 
 	std::vector<Slice> calculateSuperpixels(std::vector<Slice> slices, std::vector<Slice> gtSlices, float nf, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features)
@@ -704,12 +754,17 @@ namespace bts
 
 			gSLICrLoadImage(outImg, boundaryDrawFrame);
 
-			slice.setData(boundaryDrawFrame);
-			processedSlices.push_back(slice);
-
 			// Get the mask
 			const gSLICr::IntImage *mask = gSLICrEngine->Get_Seg_Res();
 			const int* mask_ptr = mask->GetData(MEMORYDEVICE_CPU);
+			cv::Mat maskMat = cv::Mat(mySettings.img_size.y, mySettings.img_size.x, CV_32SC1, *mask_ptr);
+			
+			//cv::imshow(std::to_string(i+2000), maskMat.mul(50));
+
+			slice.setData(boundaryDrawFrame);
+			slice.setSpxMask(maskMat);
+			processedSlices.push_back(slice);
+
 
 			// Calculate the features
 			if (features.at(0))
@@ -737,7 +792,8 @@ namespace bts
 			}
 		}
 
-		float multiplier = nonTumour / (float)tumorousFeatures.size() - 1;
+		// TODO toto len pre trÈnvoacie d·ta, pre testovacie nerob
+		/*float multiplier = nonTumour / (float)tumorousFeatures.size() - 1;
 		std::ofstream outfile;
 		outfile.open("superpixel_train_4features.txt", std::ios_base::app);
 		for (int i = 0; i < multiplier*tumorousFeatures.size(); i++)
@@ -749,7 +805,7 @@ namespace bts
 			}
 			outfile <<  "\n";
 		}
-		outfile.close();
+		outfile.close();*/
 
 		return processedSlices;
 	}
@@ -794,7 +850,7 @@ namespace bts
 		for (int i = 0; i < superpixels.size(); i++)
 		{
 			std::vector<cv::Point3i> superpixel = superpixels.at(i);
-			if (superpixel.size() == 0)
+			if (superpixel.size() == 0) // TODO ??? zeby? ano, niektore superpixle uplne zmiznu, zaujimave, lebo v klasikom gSLIC ich enforce connectivity vytvoril na novo za radom
 			{
 				continue;
 			}
@@ -806,10 +862,13 @@ namespace bts
 				pow((slice.getNumber() - 1) - centroid.z, 2));
 			
 			float distThreshold = sqrt(sliceImg.rows * sliceImg.cols / 16.0); // should be 60.0 for our data
-			if (isAllIntesitiesLess(1 / idxc, superpixel, 0.80) && euclideanDistance > distThreshold)
+
+			//***TODO daù volitelne aks sa bude robit refaktoriz·cia a uprava GUI, pri testovacich to chceme ale pri trenovani nie
+			/*if (isAllIntesitiesLess(1 / idxc, superpixel, 0.80) && euclideanDistance > distThreshold)
 			{	
 				continue;
-			}
+			}*/
+
 			std::vector<float> featureNumbers;
 
 			// Save classification label to file;  1 - tumour or 0 - non-tumour
@@ -882,7 +941,7 @@ namespace bts
 					numel += neighbourSuperpixel.size();
 					for (int j = 0; j < neighbourSuperpixel.size(); j++)
 					{
-						histogram[int(idxc*neighbourSuperpixel.at(j).z)]++;
+						histogram[int(idxc*neighbourSuperpixel.at(j).z)]++; // TODO neighbourhood intensity histogram, Tu to padne!!! TODO tu padne
 					}
 				}
 
@@ -914,21 +973,6 @@ namespace bts
 			// 3 - Entropy of neighbours
 			if (features.at(3))
 			{
-				// TODO after finish DELETE THIS
-				/*if (slice.getNumber() == 78)
-				{
-				memset(histogram, 0, bins*sizeof(int));
-				float idxc = nf * (bins - 1);
-				for (int y = 0; y < sliceImg.cols; y++)
-				{
-				for (int x = 0; x < sliceImg.rows; x++)
-				{
-				histogram[int(idxc*sliceImg.at<ushort>(y, x))]++;
-				}
-				}
-				numel = sliceImg.cols * sliceImg.rows;
-				}*/
-
 				float e = entropy(histogram, bins, numel);
 				// Save to file
 				outfile << e << " ";
@@ -1001,7 +1045,8 @@ namespace bts
 	int isTumour(std::vector<cv::Point3i> superpixel, const cv::Mat& gt, bool calculateQuality, float& overallSPXQuality)
 	{
 		std::ofstream outfile;
-		outfile.open("SPXQualityUndersegmentation.txt", std::ios_base::app);
+		std::string fileName = "_UndersegmentationError_" + std::to_string(sideSizes[globalS]) + "_" + std::to_string(compactnesses[globalC]) + ".txt";
+		outfile.open(fileName, std::ios_base::app);
 		int count = 0;
 		for (int i = 0; i < superpixel.size(); i++)
 		{
@@ -1015,7 +1060,7 @@ namespace bts
 		// Undersegmentation error - only involed to GT
 		if (count > 0) // at least one tumour voxel
 		{
-			outfile << min(count, superpixel.size() - count) << ' ' << superpixel.size() << "\n";
+			outfile << min(count, superpixel.size() - count) << ' ' << count << "\n";
 		}
 
 		if (tumourRatio >= 0.50)
