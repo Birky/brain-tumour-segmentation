@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
-    <height>395</height>
+    <width>351</width>
+    <height>471</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>360</y>
+     <y>430</y>
      <width>331</width>
      <height>31</height>
     </rect>
@@ -178,7 +178,7 @@
      <x>10</x>
      <y>140</y>
      <width>331</width>
-     <height>81</height>
+     <height>121</height>
     </rect>
    </property>
    <property name="title">
@@ -227,7 +227,7 @@
         <double>0.100000000000000</double>
        </property>
        <property name="value">
-        <double>0.600000000000000</double>
+        <double>0.500000000000000</double>
        </property>
       </widget>
      </item>
@@ -278,12 +278,66 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QCheckBox" name="checkBoxOnlyFlairSLIC">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>100</y>
+      <width>91</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Only FLAIR</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="formLayoutWidget_4">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>70</y>
+      <width>311</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout_4">
+     <item row="0" column="1">
+      <widget class="QComboBox" name="comboBoxColorSpace">
+       <property name="currentIndex">
+        <number>2</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>CIELab</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>XYZ</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>RGB</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Color space for SLIC:</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBoxFeatures">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>250</y>
+     <y>290</y>
      <width>331</width>
      <height>101</height>
     </rect>
@@ -355,18 +409,60 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QCheckBox" name="checkBoxOnlyFlairFeatures">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>20</y>
+      <width>81</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Only FLAIR</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QCheckBox" name="checkBoxFeatures">
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>230</y>
+     <y>270</y>
      <width>121</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
     <string>Feature extraction</string>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBoxEvaluateSPX">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>400</y>
+     <width>171</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Evaluate quality of superpixels</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBoxTrainingPurpose">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>400</y>
+     <width>111</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Training purpose</string>
    </property>
    <property name="checked">
     <bool>true</bool>

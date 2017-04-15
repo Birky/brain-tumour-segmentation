@@ -4,7 +4,7 @@
 #include <numeric>
 #include <algorithm> 
 #include <fstream>
-#include <set>
+
 
 namespace bts
 {
@@ -551,39 +551,38 @@ namespace bts
 	std::vector<Slice> calculateSuperpixels(bts::Patient* patient, std::map<std::string, float> *configuration)
 	{
 		// Configuration variables with default values
-		float compactness = 0.05;
-		int spxSideSize = 16;
-		int iterations = 5;
+		spxCompactness = 0.05;
+		spxSideSize = 16;
+		iterations = 5;
 		bool enforceConnectivity = true;
-		std::vector<bool> features = {true/*calculateFeatures?*/, true/*MeanHistogram*/, true/*MeanHistogramWithNeighbours*/, true/*Entropy*/, true/*Location - Angle and Distance*/};
+		std::vector<bool> calculateFeatures = { true/*calculateFeatures?*/, true/*MeanHistogram*/, true/*MeanHistogramWithNeighbours*/, true/*Entropy*/, true/*Location - Angle and Distance*/ };
+		int colorSpace = 2; // 0 - CIELab, 1 - XYZ, 2 - RGB
+		bool onlyFlairSLIC = false;
+		bool onlyFlairFeatures = false;
+		trainingPurpose = false;
+
 
 		// Get and set selected configurations
 		float value;
 		std::map<std::string, float>::iterator it;
-		compactness = (it = configuration->find("compactness")) != configuration->end() ? it->second : compactness;
+		spxCompactness = (it = configuration->find("compactness")) != configuration->end() ? it->second : spxCompactness;
 		spxSideSize = (it = configuration->find("spxSideSize")) != configuration->end() ? it->second : spxSideSize;
 		iterations = (it = configuration->find("iterations")) != configuration->end() ? it->second : iterations;
 		enforceConnectivity = (it = configuration->find("enforceConnectivity")) != configuration->end() ? it->second : enforceConnectivity; // Dangerous, in case of precision, must be exact 0 for false
-		
+		colorSpace = (it = configuration->find("colorSpace")) != configuration->end() ? it->second : colorSpace;
+		onlyFlairSLIC = (it = configuration->find("onlyFlairSLIC")) != configuration->end() ? it->second : onlyFlairSLIC; // Dangerous, in case of precision, must be exact 0 for false
+		onlyFlairFeatures = (it = configuration->find("onlyFlairFeatures")) != configuration->end() ? it->second : onlyFlairFeatures; // Dangerous, in case of precision, must be exact 0 for false
+		trainingPurpose = (it = configuration->find("trainingPurpose")) != configuration->end() ? it->second : trainingPurpose;
+
 		int featuresCount = 4;
 		for (int i = 0; i <= featuresCount; i++)
 		{
-			features.at(i) = (it = configuration->find("features" + std::to_string(i))) != configuration->end() ? it->second : features.at(i);
+			calculateFeatures.at(i) = (it = configuration->find("features" + std::to_string(i))) != configuration->end() ? it->second : calculateFeatures.at(i);
 		}
-		
+
 
 		std::vector<Slice> processedSlices;
 
-// Only when evaluating the superpixel quality
-		for ( globalC = 0; globalC < 4; globalC++)
-		{
-			for ( globalS = 0; globalS < 2; globalS++)
-			{
-
-				compactness = compactnesses[globalC];
-				spxSideSize = sideSizes[globalS];
-
-		
 		// We leave out T1 sequence becuase it contains the less information about tumor
 		std::vector<bts::Slice> slicesFLAIR = patient->getOrginalData()->getSlices(bts::modalityMap["Flair"]);
 		std::vector<bts::Slice> slicesT1c = patient->getOrginalData()->getSlices(bts::modalityMap["T1c"]);
@@ -591,24 +590,19 @@ namespace bts
 		std::vector<bts::Slice> slicesGT = patient->getOrginalData()->getSlices(bts::modalityMap["GT"]);
 
 		// Getting local max value (per sequence) - in case of global max value the results are worse because of big intensity differences between different sequences
-		float nfFLAIR = 1 /  float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["Flair"]));
-		float nfT1c = 1 /  float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["T1c"]));
-		float nfT2 = 1 /  float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["T2"]));
-
-		
-		std::vector<std::vector<float>> tumorousFeatures;
-		float overallSPXQuality = 0.0;
-		long nonTumour = 0;
+		float nfFLAIR = 1 / float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["Flair"]));
+		float nfT1c = 1 / float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["T1c"]));
+		float nfT2 = 1 / float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["T2"]));
 
 		// gSLICr settings
 		gSLICr::objects::settings mySettings;
 		mySettings.img_size.x = slicesFLAIR.at(0).getData().cols;
 		mySettings.img_size.y = slicesFLAIR.at(0).getData().rows;
 		mySettings.spixel_size = spxSideSize;
-		mySettings.coh_weight = compactness;
+		mySettings.coh_weight = spxCompactness;
 		mySettings.no_iters = iterations;
-		mySettings.color_space = gSLICr::CIELAB;//gSLICr::CIELAB; // TODO daù do GUI
-		mySettings.seg_method = gSLICr::GIVEN_SIZE; 
+		mySettings.color_space = (gSLICr::COLOR_SPACE) colorSpace;// gSLICr::RGB;//gSLICr::CIELAB; 
+		mySettings.seg_method = gSLICr::GIVEN_SIZE;
 		mySettings.do_enforce_connectivity = enforceConnectivity;
 
 		// instantiate a core_engine
@@ -625,15 +619,25 @@ namespace bts
 			cv::Mat boundaryDrawFrame;
 			boundaryDrawFrame.create(s, CV_8UC1);
 			Slice slice = slicesFLAIR.at(i);
+
 			cv::Mat frame1 = slicesFLAIR.at(i).getData();
 			cv::Mat frame2 = slicesT1c.at(i).getData();
 			cv::Mat frame3 = slicesT2.at(i).getData();
 
-			frame1.convertTo(frame1, CV_8UC1, nfFLAIR * 255); // TODO str·came tu presnosù
-			frame2.convertTo(frame2, CV_8UC1, nfT1c * 255); // TODO str·came tu presnosù
-			frame3.convertTo(frame3, CV_8UC1, nfT2 * 255); // TODO str·came tu presnosù
+			if (onlyFlairSLIC)
+			{
+				frame1.convertTo(frame1, CV_8UC1, nfFLAIR * 255); // TODO str·came tu presnosù
 
-			gSLICrLoadImage(frame1, frame2, frame3, inImg);
+				gSLICrLoadImage(frame1, inImg);
+			}
+			else
+			{
+				frame1.convertTo(frame1, CV_8UC1, nfFLAIR * 255); // TODO str·came tu presnosù
+				frame2.convertTo(frame2, CV_8UC1, nfT1c * 255); // TODO str·came tu presnosù
+				frame3.convertTo(frame3, CV_8UC1, nfT2 * 255); // TODO str·came tu presnosù
+
+				gSLICrLoadImage(frame1, frame2, frame3, inImg);
+			}
 
 			gSLICrEngine->Process_Frame(inImg);
 
@@ -659,7 +663,7 @@ namespace bts
 			processedSlices.push_back(slice);
 
 			// Calculate the features
-			if (features.at(0))
+			if (calculateFeatures.at(0))
 			{
 				// Get superpixels count
 				int countSPX = mask_ptr[0];
@@ -680,144 +684,511 @@ namespace bts
 				// Get ground truth image
 				cv::Mat gtImage = slicesGT.at(i).getData();
 
-				// TODO spraviù aj pre ostatÈ sekkvencie moûno staËÌ viackr·t zavolaù funkciu
-				// BuÔ to daj zvl·öù vöetky alebo rozöÌr dimenziu features
-				calculateFeaturesOfSuperpixels(slicesFLAIR.at(i), gtImage, mask_ptr, countSPX, nfFLAIR, centroid, features, tumorousFeatures, nonTumour, overallSPXQuality);
+				std::vector<std::vector<float>> tumorousFeatures;
+				std::vector<std::vector<float>> nonTumorousfeatures;
+				std::vector<bts::Slice> fSlices;
+				std::vector<float> fNFs;
+				// TODO prerobit calculateFeatures, aby ti vratilo vypocitane features a potom to vypisat do suboru az tu vonku! Potom by stacilo pocitat tumorousFeatures iba tu
+				if (onlyFlairFeatures)
+				{
+					fSlices.push_back(slicesFLAIR.at(i));
+					fNFs.push_back(nfFLAIR);
+					calculateFeaturesOfSuperpixels(fSlices, gtImage, mask_ptr, countSPX, fNFs, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);
+					/*calculateFeaturesOfSuperpixels(slicesFLAIR.at(i), gtImage, mask_ptr, countSPX, nfFLAIR, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);*/
+				}
+				else
+				{
+					fSlices.push_back(slicesFLAIR.at(i));
+					fSlices.push_back(slicesT1c.at(i));
+					fSlices.push_back(slicesT2.at(i));
+					fNFs.push_back(nfFLAIR);
+					fNFs.push_back(nfT1c);
+					fNFs.push_back(nfT2);
+					if (i == 42)
+					{
+						int a = i;
+					}
+					calculateFeaturesOfSuperpixels(fSlices, gtImage, mask_ptr, countSPX, fNFs, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);
+					/*calculateFeaturesOfSuperpixels(slicesFLAIR.at(i), gtImage, mask_ptr, countSPX, nfFLAIR, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);
+					calculateFeaturesOfSuperpixels(slicesT1c.at(i), gtImage, mask_ptr, countSPX, nfT1c, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);
+					calculateFeaturesOfSuperpixels(slicesT2.at(i), gtImage, mask_ptr, countSPX, nfT2, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);*/
+				}
+
+				if (!evaluateSPX && (tumorousFeatures.size() != 0 || nonTumorousfeatures.size() != 0))
+				{
+					// Store the superpixels features to file
+					std::string fileName = "superpixel_train_4features.txt"; // TODO dynamic name
+					saveSuperpixelsFeaturesToFile(tumorousFeatures, nonTumorousfeatures, fileName);
+				}
+
 			}
 		}
 
-				}
+		return processedSlices;
+
+	}
+
+	void saveSuperpixelsFeaturesToFile(std::vector<std::vector<float>>& tumorousFeatures, std::vector<std::vector<float>>& nonTumorousFeatures, std::string fileName)
+	{
+		std::ofstream outfile;
+		outfile.open(fileName, std::ios_base::app);
+
+		int featuresDim = 0;
+		if (nonTumorousFeatures.size() != 0)
+		{
+			featuresDim = nonTumorousFeatures.at(0).size();
+		}
+		else if (tumorousFeatures.size() != 0)
+		{
+			featuresDim = tumorousFeatures.at(0).size();
 		}
 
-		//return processedSlices; // TODO zmazat po kontrole kvalitz superpixelov
-
-		//TODO len pre trÈnovaniec
-		/*float multiplier = nonTumour / (float)tumorousFeatures.size() - 1;
-		std::ofstream outfile;
-		outfile.open("superpixel_train_4features.txt", std::ios_base::app);
-		for (int i = 0; i < multiplier*tumorousFeatures.size(); i++)
+		std::string labels = "1 0"; // non-tumorous
+		for (int i = 0; i < nonTumorousFeatures.size(); i++)
 		{
-			outfile << "|labels 1 |features ";
-			for (int j = 0; j < tumorousFeatures.at(0).size(); j++)
+			outfile << "|labels " << labels << " |features ";
+			for (int j = 0; j < featuresDim; j++)
 			{
-				outfile << tumorousFeatures.at(i%tumorousFeatures.size()).at(j) << " ";
+				outfile << nonTumorousFeatures.at(i).at(j) << " ";
 			}
 			outfile << "\n";
 		}
-		outfile.close();*/
 
-		return processedSlices;
-	
+		labels = "0 1"; // tumorous
+		for (int i = 0; i < tumorousFeatures.size(); i++)
+		{
+			outfile << "|labels " << labels << " |features ";
+			for (int j = 0; j < featuresDim; j++)
+			{
+				outfile << tumorousFeatures.at(i).at(j) << " ";
+			}
+			outfile << "\n";
+		}
+
+		// In case of training purpose we need to keep the ratio of tumorous and nontumorous superpixels to 1:1
+		if (trainingPurpose)
+		{
+			float multiplier = nonTumorousFeatures.size() / (float)tumorousFeatures.size() - 1;
+			for (int i = 0; i < multiplier*tumorousFeatures.size(); i++)
+			{
+				outfile << "|labels " << labels << " |features ";
+				for (int j = 0; j < featuresDim; j++)
+				{
+					outfile << tumorousFeatures.at(i%tumorousFeatures.size()).at(j) << " ";
+				}
+				outfile << "\n";
+			}
+		}
+
+		outfile.close();
 	}
 
-	std::vector<Slice> calculateSuperpixels(std::vector<Slice> slices, std::vector<Slice> gtSlices, float nf, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features)
+	void calculateFeaturesOfSuperpixels(const std::vector<bts::Slice>& fSlices, const cv::Mat& gt, const int* mask, int noSPX, const std::vector<float>& fNFs, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& tumorousFeatures, std::vector<std::vector<float>>& nonTumorousFeatures)
 	{
-		std::vector<Slice> processedSlices;
-		std::vector<std::vector<float>> tumorousFeatures;
-		float overallSPXQuality = 0.0;
-		long nonTumour = 0;
+		const int bins = 12; // Histogram bins
+		int cols = gt.cols;
+		int rows = gt.rows;
+		int noSlices = fSlices.at(0).getNumber();
+		std::vector<std::set<int>> neighbourhood(noSPX);
+		std::vector<std::vector<cv::Point2i>> spxLoc = getSuperpixelsFromMask(mask, neighbourhood, noSPX, cols, rows);
+		std::vector<std::vector<std::vector<int>>> allSPXIntesities = getAllPixelIntensitiesOfSuperpixels(fSlices, spxLoc);
 
-		// gSLICr settings
-		gSLICr::objects::settings mySettings;
-		mySettings.img_size.x = slices.at(0).getData().cols;
-		mySettings.img_size.y = slices.at(0).getData().rows;
-		mySettings.spixel_size = spxSize;
-		mySettings.coh_weight = compactness;
-		mySettings.no_iters = iterations;
-		mySettings.color_space = gSLICr::CIELAB;
-		mySettings.seg_method = gSLICr::GIVEN_SIZE;
-		mySettings.do_enforce_connectivity = enforceConnectivity;
-
-		// instantiate a core_engine
-		gSLICr::engines::core_engine* gSLICrEngine = new gSLICr::engines::core_engine(mySettings);
-
-		// gSLICr takes gSLICr::UChar4Image as input and out put
-		gSLICr::UChar4Image* inImg = new gSLICr::UChar4Image(mySettings.img_size, true, true);
-		gSLICr::UChar4Image* outImg = new gSLICr::UChar4Image(mySettings.img_size, true, true);
-		cv::Size s(mySettings.img_size.x, mySettings.img_size.y);
-
-		// Calculate the superpixels for each slice
-		for (int i = 0; i < slices.size(); i++)
+		// Iterate trough all sequences slice
+		for (int sliceIndex = 0; sliceIndex < fSlices.size(); sliceIndex++)
 		{
-			cv::Mat boundaryDrawFrame;
-			boundaryDrawFrame.create(s, CV_8UC1);
-			Slice slice = slices.at(i);
-			cv::Mat frame = slice.getData();
+			std::vector<std::vector<int>> spxIntensities = allSPXIntesities.at(sliceIndex);
+			float nf = fNFs.at(sliceIndex);
+			float idxc = nf * (bins - 1); // indexing coefficient for histogram
 
-			frame.convertTo(frame, CV_8UC1, nf * 255); // TODO str·came tu presnosù
-
-			gSLICrLoadImage(frame, inImg);
-
-			gSLICrEngine->Process_Frame(inImg);
-
-			gSLICrEngine->Draw_Segmentation_Result(outImg);
-
-			gSLICrLoadImage(outImg, boundaryDrawFrame);
-
-			// Get the mask
-			const gSLICr::IntImage *mask = gSLICrEngine->Get_Seg_Res();
-			const int* mask_ptr = mask->GetData(MEMORYDEVICE_CPU);
-			cv::Mat maskMat = cv::Mat(mySettings.img_size.y, mySettings.img_size.x, CV_32SC1, *mask_ptr);
-			
-			//cv::imshow(std::to_string(i+2000), maskMat.mul(50));
-
-			slice.setData(boundaryDrawFrame);
-			slice.setSpxMask(maskMat);
-			processedSlices.push_back(slice);
-
-
-			// Calculate the features
-			if (features.at(0))
+			// Extract features from each superpixels individually
+			for (int i = 0, validHSPX = 0, validTSPX = 0; i < spxLoc.size(); i++)
 			{
-				// Get superpixels count
-				int countSPX = mask_ptr[0];
-				for (int j = 1; j < mySettings.img_size.x * mySettings.img_size.y; j++)
-				{
-					countSPX = max(countSPX, mask_ptr[j]);
-				}
-				countSPX++;
-
-				// Get the centroid of the volume
-				std::vector<bts::Slice> thresholdedSlices = bts::doThreshold(slices, 1, 1);
-				cv::Point3i centroid = getCentroid(thresholdedSlices);
-				if (centroid.x == -1)
+				if (spxLoc.at(i).size() == 0) // Some superpixels disappear, they have no assigned pixels
 				{
 					continue;
 				}
 
-				// Get ground truth image
-				cv::Mat gtImage = gtSlices.at(i).getData();
+				// ignoring superpixels of black background - all pixels with 0 intensity
+				cv::Point2i spxCentroid = getCentroid(spxLoc.at(i));
+				float euclideanDistance = sqrt(pow(spxCentroid.x - centroid.x, 2) +
+					pow(spxCentroid.y - centroid.y, 2) +
+					pow((noSlices - 1) - centroid.z, 2));
 
-				calculateFeaturesOfSuperpixels(slices.at(i), gtImage, mask_ptr, countSPX, nf, centroid, features, tumorousFeatures, nonTumour, overallSPXQuality);
+				float distThreshold = sqrt(rows * cols / 16.0); // should be 60.0 for our data
+
+				// TODO treba prerobit AND pre vsetky // TODO only when first one, and fill the vector of validity
+				if (trainingPurpose) // TODO mozno by bolo aj pri trenovani pouzit taketo superpixle, je to otaznee
+				{
+					//bool skipIt = (isAllIntesitiesLess(1 / idxc, spxIntensities.at(i), 0.80) && euclideanDistance > distThreshold);
+					bool skipIt = true; // TODO prerobit aby to nemuselo robit po kazdom, ale len raz, cize tie vysledky treba ulozit do vektora a potom uz kontrolovat len to. TODO toto cele by sa dalo spravit mimo tohto loopu cize najprv vsetko vypocitat
+					for (int kk = 0; kk < fSlices.size(); kk++)
+					{
+						float idxc2 = fNFs.at(kk) * (bins - 1);
+						skipIt = (skipIt && (isAllIntesitiesLess(1 / idxc2, allSPXIntesities.at(kk).at(i), 0.80) && euclideanDistance > distThreshold));
+						if (!skipIt)
+						{
+							break;
+						}
+					}
+					if (skipIt)
+					{
+						continue;
+					}
+				}
+
+				std::vector<float> featureNumbers;
+
+				// Save classification label to file;  1 - tumour or 0 - non-tumour
+				int result = isTumour(spxLoc.at(i), gt, evaluateSPX);  //TODO ak budes chcieù klasifikovat jednotlive casti nadora, daj vypocotej majoritnej casti a dopln o dalsie vektory
+
+				// In case of SPX quality evaluation do not calculate the features to save time
+				if (evaluateSPX)
+				{
+					continue;
+				}
+
+				// Calculate features and store the results to vectors
+
+				// 1 - Intensity histogram feature
+				int *histogram = nullptr;
+				float *normHist = nullptr;
+				int numel = 0;
+				if (calculateFeatures.at(1) || calculateFeatures.at(2) || calculateFeatures.at(3))
+				{
+					histogram = new int[bins];
+					normHist = new float[bins];
+					memset(histogram, 0, bins*sizeof(int));
+					memset(normHist, 0, bins*sizeof(int));
+					numel = spxLoc.at(i).size();
+					for (int j = 0; j < spxLoc.at(i).size(); j++)
+					{
+						histogram[int(idxc*spxIntensities.at(i).at(j))]++;
+					}
+					// Normalize histogram
+					int max = 0;
+					for (int j = 0; j < bins; j++)
+					{
+						if (histogram[j]>max)
+						{
+							max = histogram[j];
+						}
+					}
+					for (int j = 0; j < bins; j++)
+					{
+						normHist[j] = histogram[j] / (float)max;
+					}
+
+					if (calculateFeatures.at(1))
+					{
+						// Save to vector
+						for (int j = 0; j < bins; j++)
+						{
+							featureNumbers.push_back(normHist[j]);
+						}
+					}
+				}
+
+				// 2 - Neighbourhood intensity histogram feature
+				if (calculateFeatures.at(2) || calculateFeatures.at(3))
+				{
+					std::set<int> neighbours = neighbourhood.at(i);
+					for (std::set<int>::iterator it = neighbours.begin(); it != neighbours.end(); ++it)
+					{
+						//std::vector<cv::Point2i> neighbourSPXLoc = spxLoc.at(*it);
+						std::vector<int> neighbourSPXIntensities = spxIntensities.at(*it);
+						numel += neighbourSPXIntensities.size();
+						for (int j = 0; j < neighbourSPXIntensities.size(); j++)
+						{
+							histogram[int(idxc*neighbourSPXIntensities.at(j))]++;
+						}
+					}
+
+					// Normalize histogram
+					int max = 0;
+					for (int j = 0; j < bins; j++)
+					{
+						if (histogram[j]>max)
+						{
+							max = histogram[j];
+						}
+					}
+					for (int j = 0; j < bins; j++)
+					{
+						normHist[j] = histogram[j] / (float)max;
+					}
+
+					if (calculateFeatures.at(2))
+					{
+						// Save to vector
+						for (int j = 0; j < bins; j++)
+						{
+							featureNumbers.push_back(normHist[j]);
+						}
+					}
+				}
+
+				// 3 - Entropy of neighbours
+				if (calculateFeatures.at(3))
+				{
+					float e = entropy(histogram, bins, numel);
+					// Save to vector
+					featureNumbers.push_back(e);
+				}
+
+				// 4 - Location feature
+				if (calculateFeatures.at(4))
+				{
+					// radians
+					double angleXY = atan2(spxCentroid.x - centroid.x, spxCentroid.y - centroid.y);
+					double angleXZ = atan2(spxCentroid.x - centroid.x, (noSlices - 1) - centroid.z);
+					double angleYZ = atan2(spxCentroid.y - centroid.y, (noSlices - 1) - centroid.z);
+					angleXY = angleXY < 0 ? angleXY + (2 * PI) : angleXY;
+					angleXZ = angleXZ < 0 ? angleXZ + (2 * PI) : angleXZ;
+					angleYZ = angleYZ < 0 ? angleYZ + (2 * PI) : angleYZ;
+
+					// Save to vector
+					featureNumbers.push_back(angleXY);
+					featureNumbers.push_back(angleXZ);
+					featureNumbers.push_back(angleYZ);
+					featureNumbers.push_back(euclideanDistance);
+				}
+
+				if (sliceIndex != 0)
+				{
+					if (result)
+					{
+						tumorousFeatures.at(validTSPX).insert(tumorousFeatures.at(validTSPX).end(), featureNumbers.begin(), featureNumbers.end());
+						validTSPX++; // To know with which tumorous superpixel we are dealing with
+					}
+					else
+					{
+						nonTumorousFeatures.at(validHSPX).insert(nonTumorousFeatures.at(validHSPX).end(), featureNumbers.begin(), featureNumbers.end());
+						validHSPX++; // To know with which healty superpixel we are dealing with
+					}
+				}
+				else
+				{
+					if (result)
+					{
+						tumorousFeatures.push_back(featureNumbers);
+					}
+					else
+					{
+						nonTumorousFeatures.push_back(featureNumbers);
+					}
+				}
+				
 			}
 		}
-
-		// TODO toto len pre trÈnvoacie d·ta, pre testovacie nerob
-		/*float multiplier = nonTumour / (float)tumorousFeatures.size() - 1;
-		std::ofstream outfile;
-		outfile.open("superpixel_train_4features.txt", std::ios_base::app);
-		for (int i = 0; i < multiplier*tumorousFeatures.size(); i++)
+		/*
+				// Iterate trough all sequences slice
+		for (int sliceIndex = 0; sliceIndex < fSlices.size(); sliceIndex++)
 		{
-			outfile << "|labels 1 |features ";
-			for (int j = 0; j < tumorousFeatures.at(0).size(); j++)
+			bts::Slice slice = fSlices.at(sliceIndex);
+			cv::Mat sliceImg = slice.getData();
+			sliceImg.convertTo(sliceImg, CV_16U, 1);
+			std::vector<std::vector<cv::Point3i>> superpixels(noSPX); // x, y - position, z - intensity value
+			std::vector<std::set<int>> neighbourhood(noSPX);
+			const int bins = 12; // Histogram bins
+			float nf = fNFs.at(sliceIndex);
+			float idxc = nf * (bins - 1); // indexing coefficient for histogram
+
+			short dx[4] = { -1, 0, 1, 0 };
+			short dy[4] = { 0, 1, 0, -1 };
+			for (int y = 0; y < sliceImg.rows; y++)
+			for (int x = 0; x < sliceImg.cols; x++)
 			{
-				outfile << tumorousFeatures.at(i%tumorousFeatures.size()).at(j) << " ";
+				int idx = x + y * sliceImg.cols;
+				// Extract superpixels from mask // TODO toto by bolo tiez dobre vyhodit do funkcie, raz vypocitat a hotovo, problem tu vsak robi neighbourhood, takze spravit dva typy funkcii jedna iba pre extrakciu a jedna s neighbours
+				cv::Point3i pixel(x, y, sliceImg.at<ushort>(y, x));
+				superpixels.at(mask[idx]).push_back(pixel);
+
+				// calculating neighbours
+				for (int i = 0; i < 4; i++)
+				{
+					int idxN = (x + dx[i]) + (y + dy[i]) * sliceImg.cols;
+					if (mask[idx] != mask[idxN])
+					{
+						neighbourhood.at(mask[idx]).insert(mask[idxN]);
+						neighbourhood.at(mask[idxN]).insert(mask[idx]);
+					}
+				}
 			}
-			outfile <<  "\n";
-		}
-		outfile.close();*/
 
-		return processedSlices;
+			// Extract features from each superpixels individually
+			for (int i = 0, validHSPX = 0, validTSPX = 0; i < superpixels.size(); i++)
+			{
+				std::vector<cv::Point3i> superpixel = superpixels.at(i);
+				if (superpixel.size() == 0) // Some superpixels disappear, they have no assigned pixels
+				{
+					continue;
+				}
+
+				// ignoring superpixels of black background - all pixels with 0 intensity
+				cv::Point2i spxCentroid = getCentroid(superpixel);
+				float euclideanDistance = sqrt(pow(spxCentroid.x - centroid.x, 2) +
+					pow(spxCentroid.y - centroid.y, 2) +
+					pow((slice.getNumber() - 1) - centroid.z, 2));
+
+				float distThreshold = sqrt(sliceImg.rows * sliceImg.cols / 16.0); // should be 60.0 for our data
+
+				
+				if (trainingPurpose && isAllIntesitiesLess(1 / idxc, superpixel, 0.80) && euclideanDistance > distThreshold) // TODO mozno by bolo aj pri trenovani pouzit taketo superpixle, je to otaznee
+				{
+					continue;
+				}
+
+				std::vector<float> featureNumbers;
+
+				// Save classification label to file;  1 - tumour or 0 - non-tumour
+				int result = isTumour(superpixel, gt, evaluateSPX);  //TODO ak budes chcieù klasifikovat jednotlive casti nadora, daj vypocotej majoritnej casti a dopln o dalsie vektory
+
+				// In case of SPX quality evaluation do not calculate the features to save time
+				if (evaluateSPX)
+				{
+					continue;
+				}
+
+				// Calculate features and store the results to vectors
+
+				// 1 - Intensity histogram feature
+				int *histogram = nullptr;
+				float *normHist = nullptr;
+				int numel = 0;
+				if (calculateFeatures.at(1) || calculateFeatures.at(2) || calculateFeatures.at(3))
+				{
+					histogram = new int[bins];
+					normHist = new float[bins];
+					memset(histogram, 0, bins*sizeof(int));
+					memset(normHist, 0, bins*sizeof(int));
+					numel = superpixel.size();
+					for (int j = 0; j < superpixel.size(); j++)
+					{
+						histogram[int(idxc*superpixel.at(j).z)]++;
+					}
+					// Normalize histogram
+					int max = 0;
+					for (int j = 0; j < bins; j++)
+					{
+						if (histogram[j]>max)
+						{
+							max = histogram[j];
+						}
+					}
+					for (int j = 0; j < bins; j++)
+					{
+						normHist[j] = histogram[j] / (float)max;
+					}
+
+					if (calculateFeatures.at(1))
+					{
+						// Save to vector
+						for (int j = 0; j < bins; j++)
+						{
+							featureNumbers.push_back(normHist[j]);
+						}
+					}
+				}
+
+				// 2 - Neighbourhood intensity histogram feature
+				if (calculateFeatures.at(2) || calculateFeatures.at(3))
+				{
+					std::set<int> neighbours = neighbourhood.at(i);
+					for (std::set<int>::iterator it = neighbours.begin(); it != neighbours.end(); ++it)
+					{
+						std::vector<cv::Point3i> neighbourSuperpixel = superpixels.at(*it);
+						numel += neighbourSuperpixel.size();
+						for (int j = 0; j < neighbourSuperpixel.size(); j++)
+						{
+							histogram[int(idxc*neighbourSuperpixel.at(j).z)]++;
+						}
+					}
+
+					// Normalize histogram
+					int max = 0;
+					for (int j = 0; j < bins; j++)
+					{
+						if (histogram[j]>max)
+						{
+							max = histogram[j];
+						}
+					}
+					for (int j = 0; j < bins; j++)
+					{
+						normHist[j] = histogram[j] / (float)max;
+					}
+
+					if (calculateFeatures.at(2))
+					{
+						// Save to vector
+						for (int j = 0; j < bins; j++)
+						{
+							featureNumbers.push_back(normHist[j]);
+						}
+					}
+				}
+
+				// 3 - Entropy of neighbours
+				if (calculateFeatures.at(3))
+				{
+					float e = entropy(histogram, bins, numel);
+					// Save to vector
+					featureNumbers.push_back(e);
+				}
+
+				// 4 - Location feature
+				if (calculateFeatures.at(4))
+				{
+					// radians
+					double angleXY = atan2(spxCentroid.x - centroid.x, spxCentroid.y - centroid.y);
+					double angleXZ = atan2(spxCentroid.x - centroid.x, (slice.getNumber() - 1) - centroid.z);
+					double angleYZ = atan2(spxCentroid.y - centroid.y, (slice.getNumber() - 1) - centroid.z);
+					angleXY = angleXY < 0 ? angleXY + (2 * PI) : angleXY;
+					angleXZ = angleXZ < 0 ? angleXZ + (2 * PI) : angleXZ;
+					angleYZ = angleYZ < 0 ? angleYZ + (2 * PI) : angleYZ;
+
+					// Save to vector
+					featureNumbers.push_back(angleXY);
+					featureNumbers.push_back(angleXZ);
+					featureNumbers.push_back(angleYZ);
+					featureNumbers.push_back(euclideanDistance);
+				}
+
+				if (sliceIndex != 0)
+				{
+					if (result)
+					{
+						tumorousFeatures.at(validTSPX).insert(tumorousFeatures.at(validTSPX).end(), featureNumbers.begin(), featureNumbers.end());
+						validTSPX++; // To know with which tumorous superpixel we are dealing with
+					}
+					else
+					{
+						nonTumorousFeatures.at(validHSPX).insert(nonTumorousFeatures.at(validHSPX).end(), featureNumbers.begin(), featureNumbers.end());
+						validHSPX++; // To know with which healty superpixel we are dealing with
+					}
+				}
+				else
+				{
+					if (result)
+					{
+						tumorousFeatures.push_back(featureNumbers);
+					}
+					else
+					{
+						nonTumorousFeatures.push_back(featureNumbers);
+					}
+				}
+				
+			}
+		}*/
 	}
-
-	void calculateFeaturesOfSuperpixels(const Slice& slice, const cv::Mat& gt, const int* mask, int noSPX, float nf, cv::Point3i centroid, std::vector<bool> features, std::vector<std::vector<float>>& tumorousFeatures, long& nonTumour, float& overallSPXQuality)
+	void calculateFeaturesOfSuperpixels(const Slice& slice, const cv::Mat& gt, const int* mask, int noSPX, float nf, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& tumorousFeatures, std::vector<std::vector<float>>& nonTumorousFeatures)
 	{
-		cv::Mat sliceImg = slice.getData();
+	/*	cv::Mat sliceImg = slice.getData();
 		sliceImg.convertTo(sliceImg, CV_16U, 1);
 		std::vector<std::vector<cv::Point3i>> superpixels(noSPX); // x, y - position, z - intensity value
 		std::vector<std::set<int>> neighbourhood(noSPX);
-		//std::vector<std::vector<cv::Point3i>> tumorousSuperpixels;
-		const int bins = 24; // Histogram bins
+		const int bins = 12; // Histogram bins
 		float idxc = nf * (bins - 1); // indexing coefficient for histogram
 
 		short dx[4] = { -1, 0, 1, 0 };
@@ -826,7 +1197,7 @@ namespace bts
 		for (int x = 0; x < sliceImg.cols; x++)
 		{
 			int idx = x + y * sliceImg.cols;
-			// Extract superpixels from mask
+			// Extract superpixels from mask // TODO toto by bolo tiez dobre vyhodit do funkcie, raz vypocitat a hotovo, problem tu vsak robi neighbourhood, takze spravit dva typy funkcii jedna iba pre extrakciu a jedna s neighbours
 			cv::Point3i pixel(x, y, sliceImg.at<ushort>(y, x));
 			superpixels.at(mask[idx]).push_back(pixel);
 
@@ -842,15 +1213,11 @@ namespace bts
 			}
 		}
 
-		std::ofstream outfile;
-		outfile.open("superpixel_train_4features.txt", std::ios_base::app);
-		std::stringstream stream;
-
 		// Extract features from each superpixels individually
 		for (int i = 0; i < superpixels.size(); i++)
 		{
 			std::vector<cv::Point3i> superpixel = superpixels.at(i);
-			if (superpixel.size() == 0) // TODO ??? zeby? ano, niektore superpixle uplne zmiznu, zaujimave, lebo v klasikom gSLIC ich enforce connectivity vytvoril na novo za radom
+			if (superpixel.size() == 0) // Some superpixels disappear, they have no assigned pixels
 			{
 				continue;
 			}
@@ -860,42 +1227,33 @@ namespace bts
 			float euclideanDistance = sqrt(pow(spxCentroid.x - centroid.x, 2) +
 				pow(spxCentroid.y - centroid.y, 2) +
 				pow((slice.getNumber() - 1) - centroid.z, 2));
-			
+
 			float distThreshold = sqrt(sliceImg.rows * sliceImg.cols / 16.0); // should be 60.0 for our data
 
-			//***TODO daù volitelne aks sa bude robit refaktoriz·cia a uprava GUI, pri testovacich to chceme ale pri trenovani nie
-			/*if (isAllIntesitiesLess(1 / idxc, superpixel, 0.80) && euclideanDistance > distThreshold)
-			{	
+
+			if (trainingPurpose && isAllIntesitiesLess(1 / idxc, superpixel, 0.80) && euclideanDistance > distThreshold) // TODO mozno by bolo aj pri trenovani pouzit taketo superpixle, je to otaznee
+			{
 				continue;
-			}*/
+			}
 
 			std::vector<float> featureNumbers;
 
 			// Save classification label to file;  1 - tumour or 0 - non-tumour
-			bool calculateQuality = true; // Default SPX quality calculation // TODO do it optionally
-			int result = isTumour(superpixel, gt, calculateQuality, overallSPXQuality); 
-			continue; // TODO iba kym pocitam presnost superpixelov
-			//TODO ak budes chcieù klasifikovat jednotlive casti nadora, daj vypocotej majoritnej casti
+			int result = isTumour(superpixel, gt, evaluateSPX);  //TODO ak budes chcieù klasifikovat jednotlive casti nadora, daj vypocotej majoritnej casti a dopln o dalsie vektory
 
-			std::string labels;
-			if (result == 0)
+			// In case of SPX quality evaluation do not calculate the features to save time
+			if (evaluateSPX)
 			{
-				labels = "1 0";
-			}
-			else
-			{
-				labels = "0 1";
+				continue;
 			}
 
-			outfile << "|labels " << labels << " ";
+			// Calculate features and store the results to vectors
 
-			outfile << "|features ";
-			
 			// 1 - Intensity histogram feature
 			int *histogram = nullptr;
 			float *normHist = nullptr;
 			int numel = 0;
-			if (features.at(1) || features.at(2) || features.at(3))
+			if (calculateFeatures.at(1) || calculateFeatures.at(2) || calculateFeatures.at(3))
 			{
 				histogram = new int[bins];
 				normHist = new float[bins];
@@ -920,19 +1278,18 @@ namespace bts
 					normHist[j] = histogram[j] / (float)max;
 				}
 
-				if (features.at(1))
+				if (calculateFeatures.at(1))
 				{
-					// Save to file
+					// Save to vector
 					for (int j = 0; j < bins; j++)
 					{
-						outfile << normHist[j] << " ";
 						featureNumbers.push_back(normHist[j]);
 					}
 				}
 			}
 
 			// 2 - Neighbourhood intensity histogram feature
-			if (features.at(2) || features.at(3))
+			if (calculateFeatures.at(2) || calculateFeatures.at(3))
 			{
 				std::set<int> neighbours = neighbourhood.at(i);
 				for (std::set<int>::iterator it = neighbours.begin(); it != neighbours.end(); ++it)
@@ -941,7 +1298,7 @@ namespace bts
 					numel += neighbourSuperpixel.size();
 					for (int j = 0; j < neighbourSuperpixel.size(); j++)
 					{
-						histogram[int(idxc*neighbourSuperpixel.at(j).z)]++; // TODO neighbourhood intensity histogram, Tu to padne!!! TODO tu padne
+						histogram[int(idxc*neighbourSuperpixel.at(j).z)]++;
 					}
 				}
 
@@ -956,31 +1313,29 @@ namespace bts
 				}
 				for (int j = 0; j < bins; j++)
 				{
-					normHist[j] = histogram[j]/(float)max;
+					normHist[j] = histogram[j] / (float)max;
 				}
 
-				if (features.at(2))
+				if (calculateFeatures.at(2))
 				{
-					// Save to file
+					// Save to vector
 					for (int j = 0; j < bins; j++)
 					{
-						outfile << normHist[j] << " ";
 						featureNumbers.push_back(normHist[j]);
 					}
 				}
 			}
 
 			// 3 - Entropy of neighbours
-			if (features.at(3))
+			if (calculateFeatures.at(3))
 			{
 				float e = entropy(histogram, bins, numel);
-				// Save to file
-				outfile << e << " ";
+				// Save to vector
 				featureNumbers.push_back(e);
 			}
 
 			// 4 - Location feature
-			if (features.at(4))
+			if (calculateFeatures.at(4))
 			{
 				// radians
 				double angleXY = atan2(spxCentroid.x - centroid.x, spxCentroid.y - centroid.y);
@@ -989,32 +1344,25 @@ namespace bts
 				angleXY = angleXY < 0 ? angleXY + (2 * PI) : angleXY;
 				angleXZ = angleXZ < 0 ? angleXZ + (2 * PI) : angleXZ;
 				angleYZ = angleYZ < 0 ? angleYZ + (2 * PI) : angleYZ;
-				// Save to file
-				outfile << angleXY << " ";
-				outfile << angleXZ << " ";
-				outfile << angleYZ << " ";
-				outfile << euclideanDistance << " ";
 
+				// Save to vector
 				featureNumbers.push_back(angleXY);
 				featureNumbers.push_back(angleXZ);
 				featureNumbers.push_back(angleYZ);
 				featureNumbers.push_back(euclideanDistance);
 			}
-			outfile << "\n";
 
 			if (result)
 			{
-				// store tumorous superpixels to ... doplniù pomer n·dorov˝ch a nen·dorov˝ch superpixelov
 				tumorousFeatures.push_back(featureNumbers);
 			}
 			else
 			{
-				nonTumour++;
+				nonTumorousFeatures.push_back(featureNumbers);
 			}
-		}
-		outfile.close();
+		}*/
 	}
-
+	
 	float entropy(int *histogram, int bins, int numel)
 	{
 		float entropy = 0;
@@ -1042,10 +1390,10 @@ namespace bts
 		return entropy;
 	}
 
-	int isTumour(std::vector<cv::Point3i> superpixel, const cv::Mat& gt, bool calculateQuality, float& overallSPXQuality)
+	int isTumour(std::vector<cv::Point2i> superpixel, const cv::Mat& gt, bool calculateQuality)
 	{
 		std::ofstream outfile;
-		std::string fileName = "_UndersegmentationError_" + std::to_string(sideSizes[globalS]) + "_" + std::to_string(compactnesses[globalC]) + ".txt";
+		std::string fileName = "_UndersegmentationError_" + std::to_string(spxSideSize) + "_" + std::to_string(spxCompactness) + ".txt";
 		outfile.open(fileName, std::ios_base::app);
 		int count = 0;
 		for (int i = 0; i < superpixel.size(); i++)
@@ -1056,7 +1404,7 @@ namespace bts
 			}
 		}
 		float tumourRatio = count / (float)superpixel.size();
-		
+
 		// Undersegmentation error - only involed to GT
 		if (count > 0) // at least one tumour voxel
 		{
@@ -1071,26 +1419,13 @@ namespace bts
 			return 0;
 		}
 
-		// Majority
-		/*if (tumourRatio >= 0.50)
-		{
-			outfile << tumourRatio << "\n";
-			return 1;
-		}
-		else{
-			outfile << 1 - tumourRatio << "\n";
-			return 0;
-		}*/
 		outfile.close();
 	}
 
-	cv::Point2i getCentroid(std::vector<cv::Point3i> superpixel)
+	// Cannot be used for superpixels with size equal to zero
+	cv::Point2i getCentroid(std::vector<cv::Point2i> superpixel)
 	{
 		long x = 0, y = 0;
-		/*		if (superpixel.size() == 0)
-				{
-				return cv::Point2i(0,0);
-				}*/
 
 		for (int i = 0; i < superpixel.size(); i++)
 		{
@@ -1104,11 +1439,11 @@ namespace bts
 		return cv::Point2i(x, y);
 	}
 
-	bool isAllIntesitiesLess(int threshold, std::vector<cv::Point3i> superpixel)
+	bool isAllIntesitiesLess(int threshold, std::vector<int> superpixel)
 	{
 		for (int i = 0; i < superpixel.size(); i++)
 		{
-			if (superpixel.at(i).z < threshold)
+			if (superpixel.at(i) < threshold)
 			{
 				continue;
 			}
@@ -1117,13 +1452,13 @@ namespace bts
 		return true;
 	}
 
-	bool isAllIntesitiesLess(int threshold, std::vector<cv::Point3i> superpixel, float percentage)
+	bool isAllIntesitiesLess(int threshold, std::vector<int> superpixel, float percentage)
 	{
 		int higherThreshold = (1 - percentage) * superpixel.size();
 		int countHigher = 0;
 		for (int i = 0; i < superpixel.size(); i++)
 		{
-			if (superpixel.at(i).z < threshold)
+			if (superpixel.at(i) < threshold)
 			{
 				continue;
 			}
@@ -1189,6 +1524,56 @@ namespace bts
 			int idx = x + y * inimg->noDims.x;
 			outimg.at<uchar>(y, x) = inimg_ptr[idx] * 4;
 		}
+	}
+
+	std::vector<std::vector<cv::Point2i>> getSuperpixelsFromMask(const int* mask, std::vector<std::set<int>>& neighbourhood, const int noSPX, int cols, int rows)
+	{
+		std::vector<std::vector<cv::Point2i>> spxLoc(noSPX);
+
+		short dx[4] = { -1, 0, 1, 0 };
+		short dy[4] = { 0, 1, 0, -1 };
+		for (int y = 0; y < rows; y++)
+		for (int x = 0; x < cols; x++)
+		{
+			int idx = x + y * cols;
+			// Extract superpixels from mask
+			cv::Point2i pixel(x, y);
+			spxLoc.at(mask[idx]).push_back(pixel);
+
+			// calculating neighbours
+			for (int i = 0; i < 4; i++)
+			{
+				int idxN = (x + dx[i]) + (y + dy[i]) * cols;
+				if (mask[idx] != mask[idxN])
+				{
+					neighbourhood.at(mask[idx]).insert(mask[idxN]);
+					neighbourhood.at(mask[idxN]).insert(mask[idx]);
+				}
+			}
+		}
+		return spxLoc;
+	}
+
+	std::vector<std::vector<std::vector<int>>> getAllPixelIntensitiesOfSuperpixels(const std::vector<bts::Slice>& fSlices, const std::vector<std::vector<cv::Point2i>>& spxLoc)
+	{
+		std::vector<std::vector<std::vector<int>>> spxIntensities(fSlices.size(), std::vector<std::vector<int>>(spxLoc.size()));
+
+		// Loop superpixels
+		for (int i = 0; i < spxLoc.size(); i++)
+		{
+			std::vector<cv::Point2i> spx = spxLoc.at(i);
+			// Loop pixels
+			for (int j = 0; j < spx.size(); j++)
+			{
+				cv::Point2i px = spx.at(j);
+				for (int k = 0; k < fSlices.size(); k++)
+				{
+					spxIntensities.at(k).at(i).push_back(fSlices.at(k).getData().at<ushort>(px.y, px.x));
+				}
+
+			}
+		}
+		return spxIntensities;
 	}
 }
 
