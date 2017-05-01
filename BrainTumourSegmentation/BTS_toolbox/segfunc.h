@@ -41,6 +41,7 @@ namespace bts
 	std::vector<float> findOptimalThresholdValues(std::vector<Slice> slices, int angle, float distance, int fromTop, float nf);
 	cv::Mat createHistogram(cv::Mat img, int bins);
 	cv::Mat averageHistogram(cv::Mat hist, int distance);
+	int countPeaks(cv::Mat hist);
 	void showHistogram(cv::Mat hist, std::string winTitle);
 
 	// Image(s) arithmetic operations
@@ -56,6 +57,9 @@ namespace bts
 
 	// Growing region segmentation
 	std::vector<bts::Slice> growingRegion(std::vector<bts::Slice> mask, cv::Point3i seed, int connectivity);
+	std::vector<bts::Slice> getBiggestConnectedRegion(std::vector<bts::Slice> mask);
+	int countNonZero(std::vector<bts::Slice> volume);
+
 
 	// Fix seed when does not hit
 	cv::Point3i findNearestPositive(std::vector<bts::Slice> mask, cv::Point3i centroid);
@@ -76,9 +80,9 @@ namespace bts
 	std::vector<std::vector<std::vector<int>>> getAllPixelIntensitiesOfSuperpixels(const std::vector<bts::Slice>& fSlices, const std::vector<std::vector<cv::Point2i>>& spxLoc);
 
 	// Feature extraction
-	void calculateFeaturesOfSuperpixels(const Slice& slice, const cv::Mat& gt, const int* mask, int noSPX, float nf, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& tumorousFeatures, std::vector<std::vector<float>>& nonTumorousFeatures);
-	void calculateFeaturesOfSuperpixels(const std::vector<bts::Slice>& fSlices, const cv::Mat& gt, const int* mask, int noSPX, const std::vector<float>& fNFs, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& tumorousFeatures, std::vector<std::vector<float>>& nonTumorousFeatures);
-	void saveSuperpixelsFeaturesToFile(std::vector<std::vector<float>>& tumorousFeatures, std::vector<std::vector<float>>& nonTumorousFeatures, std::string fileName);
+	void calculateFeaturesOfSuperpixels(const Slice& slice, const cv::Mat& gt, const int* mask, int noSPX, float nf, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& features);
+	void calculateFeaturesOfSuperpixels(const std::vector<bts::Slice>& fSlices, const cv::Mat& gt, const int* mask, int noSPX, const std::vector<float>& fNFs, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& features);
+	void saveSuperpixelsFeaturesToFile(std::vector<std::vector<float>>& features, std::string fileName);
 	bool isAllIntesitiesLess(int threshold, std::vector<int> superpixel);
 	bool isAllIntesitiesLess(int threshold, std::vector<int> superpixel, float percentage);
 	int isTumour(std::vector<cv::Point2i> superpixel, const cv::Mat& gt, bool calculateQuality);

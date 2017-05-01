@@ -285,6 +285,11 @@ void SuperpixelisationWindow::superpixelisationAllData()
 			// set patient for processedData
 			processedData->setPatient(currentPatient);
 
+			/*********Docasne pre testovanie kvality MAX klasifikacia*********/
+			//processedData->evaluate(currentPatient->getOrginalData()->getSlices(4));
+			/******************/
+			
+
 			// Add new processed data to the vector of processed data
 			pd.push_back(*processedData);
 		}

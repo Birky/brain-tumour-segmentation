@@ -75,8 +75,7 @@ void SPXClassifier::on_buttonBox_accepted()
 	std::string resultsFileName = ui->lineEditResults->text().toStdString();
 	std::ifstream file(resultsFileName);
 
-	for (int i = 
-		0; i < patients->size(); i++)
+	for (int i = 0; i < patients->size(); i++)
 	{
 		bts::Patient* currentPatient = &patients->at(i);
 
@@ -98,10 +97,19 @@ void SPXClassifier::on_buttonBox_accepted()
 
 			for (int spxIdx = 0; spxIdx <= max; spxIdx++)
 			{
+				/*if (j == 0 && spxIdx < max / 2)
+				{
+					mask.setTo(10000, mask == spxIdx);
+				}
+				else
+				{
+					mask.setTo(0, mask == spxIdx);
+				}*/
 				cv::Mat mask2 = mask.clone();
 				mask2.setTo(10000, mask2 == spxIdx);
 
-				bool eq = cv::countNonZero(mask != mask2) == 0;
+				bool eq = cv::countNonZero(mask != mask2) == 0; // wtf???
+	
 				if (eq)
 				{
 					continue;

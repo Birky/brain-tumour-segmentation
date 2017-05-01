@@ -82,8 +82,59 @@ namespace bts
 		return slicesA;
 	}
 
+	int countNonZero(std::vector<bts::Slice> volume)
+	{
+		int sum = 0;
+		for (int z = 0; z < volume.size(); z++)
+		{
+			sum += cv::countNonZero(volume.at(z).getData());
+		}
+		return sum;
+	}
+
+	std::vector<bts::Slice> getBiggestConnectedRegion(std::vector<bts::Slice> volume)
+	{
+		int originCount = countNonZero(volume);
+		int currentCount = 0;
+		int biggestCount = 0;
+
+		std::vector<bts::Slice> biggestRegion;
+		std::vector<bts::Slice> currentRegion;
+		// Loop the volume
+		for (int z = 0; z < volume.size(); z++)
+		{
+			for (int y = 0; y < volume.at(z).getData().rows; y++)
+			{
+				for (int x = 0; x < volume.at(z).getData().cols; x++)
+				{
+					if (volume.at(z).getData().at<float>(y, x) == 1.0) // TODO skontroluj ci sedi typ na FLOAT
+					{
+						currentRegion = growingRegion(volume, cv::Point3i(x, y, z), 0);
+						currentCount = countNonZero(currentRegion);
+
+						// If it is bigger or equal to half we found the biggest region
+						if (currentCount >= originCount)
+						{
+							return currentRegion;
+						}
+						else if (currentCount > biggestCount)
+						{
+							biggestCount = currentCount;
+							biggestRegion = currentRegion; // TODO skontroluj ci sa to kopiruje alebo ukazuje@@@ musi to kopirovat
+						}
+						// Substruct the currentRegion from the volume to do not search the same region again
+						volume = substruct(volume, currentRegion, 1, 1); // TODO skontroluj ci to robi spravne
+					}
+				}
+			}
+		}
+		return biggestRegion;
+	}
+
 	void doComplexSegmentation(Patient* patient)
 	{
+		std::vector<bts::Slice> processedSlices;
+
 		// get slices of Flair modality
 		std::vector<bts::Slice> slices = patient->getOrginalData()->getSlices(bts::modalityMap["Flair"]);
 
@@ -93,15 +144,18 @@ namespace bts
 
 		std::vector<bts::Slice> thresholdedSlices = bts::doOptimalThreshold(slices, 10, 1.5, 50, 1 / (float)maxIntensity, true);
 
+		// TODO docasne kym otestujem
+		//processedSlices = getBiggestConnectedRegion(thresholdedSlices);		
+		processedSlices = thresholdedSlices;
+
 		// Calculate the seed/centroid
-		cv::Point3i centroid = getCentroid(thresholdedSlices);
+	/*	cv::Point3i centroid = getCentroid(thresholdedSlices);
 
 		// Patch the seed
-		/*if (thresholdedSlices.at(centroid.z).getData().at<float>(centroid.y, centroid.x) != 1.0)
-		{
-		centroid = findNearestPositive(thresholdedSlices, centroid);
-		}*/
-		std::vector<bts::Slice> processedSlices;
+		//if (thresholdedSlices.at(centroid.z).getData().at<float>(centroid.y, centroid.x) != 1.0)
+		//{
+		//centroid = findNearestPositive(thresholdedSlices, centroid);
+		//}
 		if (centroid.x == -1)
 		{
 			processedSlices = thresholdedSlices;
@@ -109,7 +163,7 @@ namespace bts
 		else{
 			// Growing region
 			processedSlices = bts::growingRegion(thresholdedSlices, centroid, 0);
-		}
+		}*/
 
 		// Set up the results
 		bts::ProcessedData *processedData = new bts::ProcessedData();
@@ -227,9 +281,9 @@ namespace bts
 			{
 				// TODO doplni este aj impakt intenzity ci ineho, susedstva napr.
 				processedSlices.at(curVox.z).getData().at<float>(curVox.y, curVox.x) = 1.0;
-				int size = sizeof(nzp);
-				int size2 = sizeof(*nzp);
-				int size3 = sizeof(&nzp);
+				//int size = sizeof(nzp);
+				//int size2 = sizeof(*nzp);
+				//int size3 = sizeof(&nzp);
 				// find neighbours
 				for (int i = 0; i < ncount; i++)
 				{
@@ -243,7 +297,7 @@ namespace bts
 						continue;
 					}
 					queue.push_back(nPoint);
-					processedSlices.at(nPoint.z).getData().at<float>(nPoint.y, nPoint.x) = 0.5;
+					processedSlices.at(nPoint.z).getData().at<float>(nPoint.y, nPoint.x) = 0.5; // next to visit
 				}
 			}
 		}
@@ -357,6 +411,41 @@ namespace bts
 		cv::imshow(winTitle.c_str(), canvas);
 	}
 
+	int countPeaks(cv::Mat hist)
+	{
+		int countPeaks = 0;
+		for (int i = 1; i < hist.size().width-1; i++)
+		{
+			int a = hist.at<int>(i-1);
+			int b = hist.at<int>(i); 
+			int c = hist.at<int>(i + 1);
+			if (a < b)
+			{
+				if (b>c)
+				{
+					countPeaks++;
+				}
+				else if (b==c)
+				{
+					for (i++; i < hist.size().width - 1; i++)
+					{
+						c = hist.at<int>(i + 1);
+						if (b!=c)
+						{
+							if (b>c)
+							{
+								countPeaks++;
+							}
+							break;
+						}
+					}
+				}
+
+			}
+		}
+		return countPeaks;
+	}
+
 	cv::Mat averageHistogram(cv::Mat hist, int distance)
 	{
 		// average the whole histogram
@@ -397,8 +486,17 @@ namespace bts
 		// Create histogram with specific number of bins
 		cv::Mat hist = createHistogram(img, bins);
 
+		/******************************TODO test*/
+		/*cv::Mat smoothHist = hist.clone();
+
+		smoothHist = averageHistogram(smoothHist,bins*0.015);
+		int peakCount = countPeaks(smoothHist);
+		showHistogram(smoothHist,std::to_string(peakCount));*/
+			/***************************************/
+
 		// Average the histogram
 		hist = averageHistogram(hist, bins*0.015);
+
 
 		// For histogram, obtain the maximum (peak) value and index 
 		int maxIndex = 0;
@@ -474,13 +572,28 @@ namespace bts
 	std::vector<float> findOptimalThresholdValues(std::vector<Slice> slices, int angle, float distance, int fromTop, float nf)
 	{
 		std::vector<float> thresholdValues;
+		int countBad = 0;
 		for (int i = 0; i < slices.size(); i++)
 		{
 			cv::Mat img = slices.at(i).getData();
 			img.convertTo(img, CV_32F, nf);
 			float thresholdValue = findOptimalThresholdValue(img, angle, distance, fromTop, nf);
+
+			/*****************/
+			double maxValue;
+			cv::minMaxLoc(img, NULL, &maxValue);
+			if (maxValue > 0.5 && maxValue*0.80 < thresholdValue)
+			{
+				countBad++;
+			}
+			/*****************/
 			thresholdValues.push_back(thresholdValue);
 		}
+		std::ofstream outfile;
+		outfile.open("BadData.txt", std::ios_base::app);
+		outfile << countBad << "\n";
+		outfile.close();
+
 		return thresholdValues;
 	}
 
@@ -649,6 +762,7 @@ namespace bts
 			const gSLICr::IntImage *mask = gSLICrEngine->Get_Seg_Res();
 			const int* mask_ptr = mask->GetData(MEMORYDEVICE_CPU);
 
+			// TODO preco nepouzivam tento maskMat pre CalculateFetures kde sa vypocitava vector superpixelov z masky, bolo by to sikovnejsie, prerob to!!!
 			cv::Mat maskMat;
 			maskMat.create(s, CV_32SC1);
 			for (int y = 0; y < mySettings.img_size.y; y++)
@@ -657,11 +771,37 @@ namespace bts
 				int idx = x + y * mySettings.img_size.x;
 				maskMat.at<int>(y, x) = mask_ptr[idx];
 			}
-
+			
 			slice.setData(boundaryDrawFrame);
 			slice.setSpxMask(maskMat);
-			processedSlices.push_back(slice);
+			
 
+			/*************************TESTOVANIE MAX KVALITY SEGMENTACIE NA ZAKLADE SUPERPIXELOV***************************/
+			/*// Get superpixels count
+			int countSPX = mask_ptr[0];
+			for (int j = 1; j < mySettings.img_size.x * mySettings.img_size.y; j++)
+			{
+				countSPX = max(countSPX, mask_ptr[j]);
+			}
+
+			countSPX++;
+			std::vector<std::set<int>> neighbourhood(countSPX);
+
+			// get superpixels from the current mask
+			std::vector<std::vector<cv::Point2i>> spxLoc = getSuperpixelsFromMask(mask_ptr, neighbourhood, countSPX, mySettings.img_size.x, mySettings.img_size.y);
+			for (int j = 0; j < spxLoc.size(); j++)
+			{
+				int result = isTumour(spxLoc.at(j), slicesGT.at(i).getData(), evaluateSPX);
+				maskMat.convertTo(maskMat, CV_32F, 1.0);
+				if (spxLoc.at(j).size() == 0) continue;
+				int label = maskMat.at<float>(spxLoc.at(j).at(0).y, spxLoc.at(j).at(0).x);
+				maskMat.setTo(result, maskMat == label);
+			}
+			
+			slice.setData(maskMat);*/
+
+			/**************************************************************************************************************/
+			processedSlices.push_back(slice);
 			// Calculate the features
 			if (calculateFeatures.at(0))
 			{
@@ -684,8 +824,7 @@ namespace bts
 				// Get ground truth image
 				cv::Mat gtImage = slicesGT.at(i).getData();
 
-				std::vector<std::vector<float>> tumorousFeatures;
-				std::vector<std::vector<float>> nonTumorousfeatures;
+				std::vector<std::vector<float>> features;
 				std::vector<bts::Slice> fSlices;
 				std::vector<float> fNFs;
 				// TODO prerobit calculateFeatures, aby ti vratilo vypocitane features a potom to vypisat do suboru az tu vonku! Potom by stacilo pocitat tumorousFeatures iba tu
@@ -693,7 +832,7 @@ namespace bts
 				{
 					fSlices.push_back(slicesFLAIR.at(i));
 					fNFs.push_back(nfFLAIR);
-					calculateFeaturesOfSuperpixels(fSlices, gtImage, mask_ptr, countSPX, fNFs, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);
+					calculateFeaturesOfSuperpixels(fSlices, gtImage, mask_ptr, countSPX, fNFs, centroid, calculateFeatures, features);
 					/*calculateFeaturesOfSuperpixels(slicesFLAIR.at(i), gtImage, mask_ptr, countSPX, nfFLAIR, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);*/
 				}
 				else
@@ -704,77 +843,68 @@ namespace bts
 					fNFs.push_back(nfFLAIR);
 					fNFs.push_back(nfT1c);
 					fNFs.push_back(nfT2);
-					if (i == 42)
-					{
-						int a = i;
-					}
-					calculateFeaturesOfSuperpixels(fSlices, gtImage, mask_ptr, countSPX, fNFs, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);
+
+					calculateFeaturesOfSuperpixels(fSlices, gtImage, mask_ptr, countSPX, fNFs, centroid, calculateFeatures, features);
 					/*calculateFeaturesOfSuperpixels(slicesFLAIR.at(i), gtImage, mask_ptr, countSPX, nfFLAIR, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);
 					calculateFeaturesOfSuperpixels(slicesT1c.at(i), gtImage, mask_ptr, countSPX, nfT1c, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);
 					calculateFeaturesOfSuperpixels(slicesT2.at(i), gtImage, mask_ptr, countSPX, nfT2, centroid, calculateFeatures, tumorousFeatures, nonTumorousfeatures);*/
 				}
 
-				if (!evaluateSPX && (tumorousFeatures.size() != 0 || nonTumorousfeatures.size() != 0))
+				if (!evaluateSPX && features.size() != 0)
 				{
 					// Store the superpixels features to file
 					std::string fileName = "superpixel_train_4features.txt"; // TODO dynamic name
-					saveSuperpixelsFeaturesToFile(tumorousFeatures, nonTumorousfeatures, fileName);
+					saveSuperpixelsFeaturesToFile(features, fileName);
 				}
 
 			}
 		}
-
+		
 		return processedSlices;
 
 	}
 
-	void saveSuperpixelsFeaturesToFile(std::vector<std::vector<float>>& tumorousFeatures, std::vector<std::vector<float>>& nonTumorousFeatures, std::string fileName)
+	void saveSuperpixelsFeaturesToFile(std::vector<std::vector<float>>& features, std::string fileName)
 	{
 		std::ofstream outfile;
 		outfile.open(fileName, std::ios_base::app);
 
-		int featuresDim = 0;
-		if (nonTumorousFeatures.size() != 0)
-		{
-			featuresDim = nonTumorousFeatures.at(0).size();
-		}
-		else if (tumorousFeatures.size() != 0)
-		{
-			featuresDim = tumorousFeatures.at(0).size();
-		}
+		int featuresDim = features.at(0).size();
 
-		std::string labels = "1 0"; // non-tumorous
-		for (int i = 0; i < nonTumorousFeatures.size(); i++)
+		int tCount = 0;
+		int hCount = 0;
+		std::string labels;
+		for (int i = 0; i < features.size(); i++)
 		{
-			outfile << "|labels " << labels << " |features ";
-			for (int j = 0; j < featuresDim; j++)
+			if (features.at(i).at(0))  // tumor or healthy
 			{
-				outfile << nonTumorousFeatures.at(i).at(j) << " ";
+				labels = "0 1";
+				tCount++;
+			}
+			else
+			{
+				labels = "1 0";
+				hCount++;
+			}
+
+			outfile << "|labels " << labels << " |features ";
+			for (int j = 1; j < featuresDim; j++)
+			{
+				outfile << features.at(i).at(j) << " ";
 			}
 			outfile << "\n";
 		}
 
-		labels = "0 1"; // tumorous
-		for (int i = 0; i < tumorousFeatures.size(); i++)
+		// In case of training purpose we need to keep the ratio of tumorous and nontumorous superpixels to 1:1 TODO
+		if (false/*trainingPurpose*/)
 		{
-			outfile << "|labels " << labels << " |features ";
-			for (int j = 0; j < featuresDim; j++)
-			{
-				outfile << tumorousFeatures.at(i).at(j) << " ";
-			}
-			outfile << "\n";
-		}
-
-		// In case of training purpose we need to keep the ratio of tumorous and nontumorous superpixels to 1:1
-		if (trainingPurpose)
-		{
-			float multiplier = nonTumorousFeatures.size() / (float)tumorousFeatures.size() - 1;
-			for (int i = 0; i < multiplier*tumorousFeatures.size(); i++)
+			float multiplier = hCount / (float)tCount - 1;
+			for (int i = 0; i < multiplier*tCount; i++)
 			{
 				outfile << "|labels " << labels << " |features ";
 				for (int j = 0; j < featuresDim; j++)
 				{
-					outfile << tumorousFeatures.at(i%tumorousFeatures.size()).at(j) << " ";
+					outfile << features.at(i%tCount).at(j) << " ";
 				}
 				outfile << "\n";
 			}
@@ -783,7 +913,7 @@ namespace bts
 		outfile.close();
 	}
 
-	void calculateFeaturesOfSuperpixels(const std::vector<bts::Slice>& fSlices, const cv::Mat& gt, const int* mask, int noSPX, const std::vector<float>& fNFs, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& tumorousFeatures, std::vector<std::vector<float>>& nonTumorousFeatures)
+	void calculateFeaturesOfSuperpixels(const std::vector<bts::Slice>& fSlices, const cv::Mat& gt, const int* mask, int noSPX, const std::vector<float>& fNFs, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& features)
 	{
 		const int bins = 12; // Histogram bins
 		int cols = gt.cols;
@@ -794,14 +924,14 @@ namespace bts
 		std::vector<std::vector<std::vector<int>>> allSPXIntesities = getAllPixelIntensitiesOfSuperpixels(fSlices, spxLoc);
 
 		// Iterate trough all sequences slice
-		for (int sliceIndex = 0; sliceIndex < fSlices.size(); sliceIndex++)
+		for (int sequenceIndex = 0; sequenceIndex < fSlices.size(); sequenceIndex++)
 		{
-			std::vector<std::vector<int>> spxIntensities = allSPXIntesities.at(sliceIndex);
-			float nf = fNFs.at(sliceIndex);
+			std::vector<std::vector<int>> spxIntensities = allSPXIntesities.at(sequenceIndex);
+			float nf = fNFs.at(sequenceIndex);
 			float idxc = nf * (bins - 1); // indexing coefficient for histogram
 
 			// Extract features from each superpixels individually
-			for (int i = 0, validHSPX = 0, validTSPX = 0; i < spxLoc.size(); i++)
+			for (int i = 0, validSPX = 0; i < spxLoc.size(); i++)
 			{
 				if (spxLoc.at(i).size() == 0) // Some superpixels disappear, they have no assigned pixels
 				{
@@ -953,29 +1083,15 @@ namespace bts
 					featureNumbers.push_back(euclideanDistance);
 				}
 
-				if (sliceIndex != 0)
+				if (sequenceIndex != 0)
 				{
-					if (result)
-					{
-						tumorousFeatures.at(validTSPX).insert(tumorousFeatures.at(validTSPX).end(), featureNumbers.begin(), featureNumbers.end());
-						validTSPX++; // To know with which tumorous superpixel we are dealing with
-					}
-					else
-					{
-						nonTumorousFeatures.at(validHSPX).insert(nonTumorousFeatures.at(validHSPX).end(), featureNumbers.begin(), featureNumbers.end());
-						validHSPX++; // To know with which healty superpixel we are dealing with
-					}
+					features.at(validSPX).insert(features.at(validSPX).end(), featureNumbers.begin(), featureNumbers.end());
+					validSPX++; // To know with which superpixel we are dealing with
 				}
 				else
 				{
-					if (result)
-					{
-						tumorousFeatures.push_back(featureNumbers);
-					}
-					else
-					{
-						nonTumorousFeatures.push_back(featureNumbers);
-					}
+					featureNumbers.insert(featureNumbers.begin(), result);
+					features.push_back(featureNumbers);
 				}
 				
 			}
@@ -1182,7 +1298,7 @@ namespace bts
 			}
 		}*/
 	}
-	void calculateFeaturesOfSuperpixels(const Slice& slice, const cv::Mat& gt, const int* mask, int noSPX, float nf, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& tumorousFeatures, std::vector<std::vector<float>>& nonTumorousFeatures)
+	void calculateFeaturesOfSuperpixels(const Slice& slice, const cv::Mat& gt, const int* mask, int noSPX, float nf, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& features)
 	{
 	/*	cv::Mat sliceImg = slice.getData();
 		sliceImg.convertTo(sliceImg, CV_16U, 1);

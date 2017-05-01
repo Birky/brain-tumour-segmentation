@@ -585,7 +585,7 @@ void BrainTumourSegmentation::on_actionImage_arithm_triggered()
 
 void BrainTumourSegmentation::on_actionDo_the_segmentation_triggered()
 {
-	// TODO dočasné, neskôr spravit okno s vyberom pacienta a modality, iba orginalne data
+/*	// TODO dočasné, neskôr spravit okno s vyberom pacienta a modality, iba orginalne data
 	std::vector<bts::Slice> slices = patients.at(0).getOrginalData()->getSlices(bts::modalityMap["Flair"]);
 	// TODO mozno by bolo dobre najprv spravit korekciu a robit to natom
 	// TODO mozno aj to morfologické otvorenie
@@ -669,7 +669,12 @@ else
 
 	std::vector<bts::ProcessedData> pd = patients.at(0).getProcessedData();
 	pd.push_back(*processedData);
-	patients.at(0).setProcessedData(pd);
+	patients.at(0).setProcessedData(pd);*/
+
+	for (int i = 0; i < patients.size(); i++)
+	{
+		bts::doComplexSegmentation(&(patients.at(i)));
+	}
 
 	fillTreeWidget(patients);
 }

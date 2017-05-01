@@ -19,7 +19,7 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 		return;
 	}
 	// Create result file
-	std::string resultPath = "data\\Deep_learning\\" + this->patient->getPatientId() + ".csv";
+	std::string resultPath = "data\\new_method1\\" + this->patient->getPatientId() + ".csv";
 	std::ofstream resultFile(resultPath);
 	resultFile << "Dice,Jaccard,TP,FP,TN,FN\n";
 	long tTP = 0, tFP = 0, tFN = 0, tTN = 0;
@@ -110,7 +110,7 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 
 
 	// Create TOTAL result file
-	resultPath = "data\\thresh_new_gr\\Totals.csv";
+	resultPath = "data\\new_method1\\Totals.csv";
 	std::ofstream fileTotal(resultPath, std::ios_base::app);
 	resultFile << "Name,Dice,Jaccard,TP,FP,TN,FN\n";
 	// Save total separetely
