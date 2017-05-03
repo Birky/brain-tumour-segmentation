@@ -1,13 +1,6 @@
 #include "imagearithmwindow.h"
 #include "ui_imagearithmwindow.h"
 
-/*ImageArithmWindow::ImageArithmWindow(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::ImageArithmWindow)
-{
-    ui->setupUi(this);
-}*/
-
 ImageArithmWindow::ImageArithmWindow(std::vector<bts::Patient> &patients) :
 ui(new Ui::ImageArithmWindow),
 patients(&patients)
@@ -30,35 +23,12 @@ patients(&patients)
 
 	ui->patientAComboBox->addItems(patientList);
 	ui->patientBComboBox->addItems(patientList);
-
-	//// set up comboboxes
-	//QStringList imageList;
-	//for each (bts::Patient patient in patients)
-	//{
-	//	// orginal images
-	//	for (std::map<std::string, int>::iterator it = bts::modalityMap.begin(); it != bts::modalityMap.end(); ++it)
-	//	{
-	//		if (patient.getOrginalData()->getSlices(it->second).size() > 0)
-	//		{
-	//			imageList.push_back(QString::fromStdString(patient.getPatientId() + " " + it->first));
-	//		}
-	//	}
-
-	//	// processed images
-	//	for each (bts::ProcessedData processedData in patient.getProcessedData())
-	//	{
-	//		imageList.push_back(QString::fromStdString(patient.getPatientId() + " " + processedData.getTitle()));
-	//	}
-	//}
-
-	//ui->imageAComboBox->addItems(imageList);
-	//ui->imageBComboBox->addItems(imageList);
 }
 
 
 ImageArithmWindow::~ImageArithmWindow()
 {
-    delete ui;
+	delete ui;
 }
 
 void ImageArithmWindow::on_buttonBox_accepted()
@@ -73,8 +43,8 @@ void ImageArithmWindow::on_buttonBox_accepted()
 	{
 		// get modality
 		int modalityIndex = bts::modalityMap[ui->slicesAComboBox->currentText().toStdString()];
-		//nfA = 1 / float(currentPatientA->getOrginalData()->getGlobalIntensityMax());
-		// TODO
+
+		// Get normalization factor of the MRI modality
 		nfA = 1 / float(currentPatientA->getOrginalData()->getIntensityMax(ui->slicesAComboBox->currentText().toStdString()));
 		slicesA = currentPatientA->getOrginalData()->getSlices(modalityIndex);
 	}
@@ -91,8 +61,8 @@ void ImageArithmWindow::on_buttonBox_accepted()
 	{
 		// get modality
 		int modalityIndex = bts::modalityMap[ui->slicesBComboBox->currentText().toStdString()];
-		//nfB = 1 / float(currentPatientB->getOrginalData()->getGlobalIntensityMax());
-		// TODO
+
+		// Get normalization factor of the MRI modality
 		nfB = 1 / float(currentPatientB->getOrginalData()->getIntensityMax(ui->slicesAComboBox->currentText().toStdString()));
 		slicesB = currentPatientB->getOrginalData()->getSlices(modalityIndex);
 	}
@@ -102,8 +72,8 @@ void ImageArithmWindow::on_buttonBox_accepted()
 		slicesB = oldProcessedData.getSlices();
 	}
 
-
-	// Do the operation // TODO este dorobit podrobnejšie doplnit rozne udaje a osetrenia
+	//TODO handle errors and add extra information for the processed data
+	// Do the operation 
 	std::vector<bts::Slice> slicesResult;
 	if (ui->substractionRadioButton->isChecked())
 	{
@@ -111,14 +81,15 @@ void ImageArithmWindow::on_buttonBox_accepted()
 		processedData->setSlices(slicesResult);
 		processedData->setTitle("Subtract " + ui->slicesAComboBox->currentText().toStdString() + " - " + ui->slicesBComboBox->currentText().toStdString()); // TODO prerob aby sme vedeli aj pacienta, ale mozno by bolo dobre dovolit operacie len medzi jednym pacientom
 	}
-else if (ui->ANDradioButton->isChecked())
-{
-	slicesResult = bts::logicalAND(slicesA, slicesB);
-	processedData->setSlices(slicesResult);
-	processedData->setTitle("AND " + ui->slicesAComboBox->currentText().toStdString() + " - " + ui->slicesBComboBox->currentText().toStdString()); 
-}
+	else if (ui->ANDradioButton->isChecked())
+	{
+		slicesResult = bts::logicalAND(slicesA, slicesB);
+		processedData->setSlices(slicesResult);
+		processedData->setTitle("AND " + ui->slicesAComboBox->currentText().toStdString() + " - " + ui->slicesBComboBox->currentText().toStdString());
+	}
 
-	// set the processedData to the currentPatient // TODO prerobit okno aby bolo mozne vybrat len jedneho pacienta
+	//TODO remake the window to allow select only one patient
+	// set the processedData to the currentPatient 
 	std::vector<bts::ProcessedData> pd = currentPatientA->getProcessedData();
 	pd.push_back(*processedData);
 	currentPatientA->setProcessedData(pd);
@@ -131,10 +102,10 @@ void ImageArithmWindow::fillSlicesComboBox(bts::Patient patient, int image)
 	{
 		comboBox = ui->slicesAComboBox;
 	}
-else
-{
-	comboBox = ui->slicesBComboBox;
-}
+	else
+	{
+		comboBox = ui->slicesBComboBox;
+	}
 	comboBox->clear();
 	QStringList slicesList;
 	// add all modalities

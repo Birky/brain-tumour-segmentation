@@ -14,7 +14,6 @@ class ThresholdToolWindow : public QDialog
     Q_OBJECT
 
 public:
-    //explicit ThresholdToolWindow(QWidget *parent = 0);
 	ThresholdToolWindow(std::vector<bts::Patient> &patients);
     ~ThresholdToolWindow();
 

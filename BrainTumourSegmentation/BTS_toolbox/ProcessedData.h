@@ -16,7 +16,7 @@ namespace bts
 	private:
 		Patient* patient;
 		std::string title;
-		int sliceCount; // TODO asi zbytoèné staèí nám slices.size()
+		int sliceCount; //TODO redundant, the count can be get by slices.size()
 		int modality; // modality index
 		std::vector<Slice> slices; // storing the processed/segmentation data
 

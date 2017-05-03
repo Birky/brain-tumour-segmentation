@@ -1,15 +1,10 @@
 <RCC>
-    <qresource prefix="/BrainTumourSegmentation">
+    <qresource prefix="/icons">
         <file>icons/brainoff.png</file>
         <file>icons/brainon.png</file>
         <file>icons/connect.ico</file>
         <file>icons/Disconnect.ico</file>
         <file>icons/local_seo-512.png</file>
         <file>icons/webapp.png</file>
-        <file>icons/BL.ico</file>
-        <file>icons/BR.ico</file>
-        <file>icons/TL.ico</file>
-        <file>icons/TR.ico</file>
-        <file>icons/brain.png</file>
     </qresource>
 </RCC>

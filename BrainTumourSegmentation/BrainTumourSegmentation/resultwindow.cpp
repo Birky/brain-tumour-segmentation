@@ -1,13 +1,6 @@
 #include "resultwindow.h"
 #include "ui_resultwindow.h"
 
-/*ResultWindow::ResultWindow(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::ResultWindow)
-{
-    ui->setupUi(this);
-}*/
-
 ResultWindow::ResultWindow(std::vector<bts::Patient> &patients) :
 ui(new Ui::ResultWindow),
 patients(&patients)
@@ -28,9 +21,6 @@ patients(&patients)
 	ui->comboBoxPatient->addItems(patientList);
 
 	currentPatient = &(patients.at(0));
-	//fillEvaluatedDataComboBox(*currentPatient);
-
-	//fillTableWithResults();
 }
 
 ResultWindow::~ResultWindow()
@@ -38,9 +28,9 @@ ResultWindow::~ResultWindow()
     delete ui;
 }
 
+//TODO Add ContextMenu which allows to save the results into a file
 void ResultWindow::fillTableWithResults()
 {
-	//bts::Patient patient = patients->at(ui->comboBoxPatient->currentIndex());
 	ui->tableWidget->clearContents();
 	std::string pdName = ui->comboBoxEvaluatedData->currentText().toStdString();
 	if (pdName.empty())

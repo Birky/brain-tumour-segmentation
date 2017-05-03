@@ -19,7 +19,7 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 		return;
 	}
 	// Create result file
-	std::string resultPath = "data\\new_method1\\" + this->patient->getPatientId() + ".csv";
+	std::string resultPath = "data\\SegmentationResults\\" + this->patient->getPatientId() + ".csv"; //TODO make customable path
 	std::ofstream resultFile(resultPath);
 	resultFile << "Dice,Jaccard,TP,FP,TN,FN\n";
 	long tTP = 0, tFP = 0, tFN = 0, tTN = 0;
@@ -31,7 +31,7 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 		gtImg.convertTo(gtImg, CV_32F);
 		cv::threshold(gtImg, gtImg, 0, 1, CV_THRESH_BINARY);
 		cv::Mat img = slices.at(i).getData();
-		img.convertTo(img, CV_32F); //TODO added 28.3.
+		img.convertTo(img, CV_32F); 
 		eSlice.setNumber(slices.at(i).getNumber());
 
 		cv::Mat and;
@@ -77,8 +77,6 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 		}
 
 		eSlice.setData(rgbResult);
-		//cv::namedWindow(std::to_string(i), CV_WINDOW_KEEPRATIO);
-		//imshow(std::to_string(i), rgbResult);
 
 		evaluatedSlices.push_back(eSlice);
 
@@ -108,9 +106,8 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 		std::to_string(tFN) + "\n";
 	resultFile.close();
 
-
 	// Create TOTAL result file
-	resultPath = "data\\new_method1\\Totals.csv";
+	resultPath = "data\\SegmentationResults\\Totals.csv";
 	std::ofstream fileTotal(resultPath, std::ios_base::app);
 	resultFile << "Name,Dice,Jaccard,TP,FP,TN,FN\n";
 	// Save total separetely

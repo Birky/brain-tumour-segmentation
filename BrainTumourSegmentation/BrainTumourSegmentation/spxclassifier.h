@@ -15,12 +15,10 @@ class SPXClassifier : public QDialog
     Q_OBJECT
 
 public:
-    //explicit SPXClassifier(QWidget *parent = 0);
 	SPXClassifier(std::vector<bts::Patient> &patients);
     ~SPXClassifier();
 
 private slots:
-    void on_pushButtonBrowseModel_clicked();
 
     void on_pushButtonBrowseResults_clicked();
 

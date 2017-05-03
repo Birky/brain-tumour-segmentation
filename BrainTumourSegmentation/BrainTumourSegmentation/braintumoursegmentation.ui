@@ -265,7 +265,7 @@
   </action>
   <action name="actionThreshold">
    <property name="text">
-    <string>Threshold</string>
+    <string>Thresholding</string>
    </property>
   </action>
   <action name="actionSuperpixels">
@@ -278,9 +278,9 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>../icons/Disconnect.ico</normaloff>
-     <normalon>../icons/connect.ico</normalon>../icons/Disconnect.ico</iconset>
+    <iconset resource="braintumoursegmentation.qrc">
+     <normaloff>:/BrainTumourSegmentation/icons/Disconnect.ico</normaloff>
+     <normalon>:/BrainTumourSegmentation/icons/connect.ico</normalon>:/BrainTumourSegmentation/icons/Disconnect.ico</iconset>
    </property>
    <property name="text">
     <string>Connect/disconnect sliders</string>
@@ -294,9 +294,9 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>../icons/webapp.png</normaloff>
-     <normalon>../icons/local_seo-512.png</normalon>../icons/webapp.png</iconset>
+    <iconset resource="braintumoursegmentation.qrc">
+     <normaloff>:/BrainTumourSegmentation/icons/webapp.png</normaloff>
+     <normalon>:/BrainTumourSegmentation/icons/local_seo-512.png</normalon>:/BrainTumourSegmentation/icons/webapp.png</iconset>
    </property>
    <property name="text">
     <string>Global/local normalization</string>
@@ -310,9 +310,9 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>../icons/Alecive-Flatwoken-Apps-Workspace-Switcher-Top-Left.ico</normaloff>
-     <normalon>../icons/Alecive-Flatwoken-Apps-Workspace-Switcher-Right-Top.ico</normalon>../icons/Alecive-Flatwoken-Apps-Workspace-Switcher-Top-Left.ico</iconset>
+    <iconset resource="braintumoursegmentation.qrc">
+     <normaloff>:/BrainTumourSegmentation/icons/brainoff.png</normaloff>
+     <normalon>:/BrainTumourSegmentation/icons/brainon.png</normalon>:/BrainTumourSegmentation/icons/brainoff.png</iconset>
    </property>
    <property name="text">
     <string>Segmented/Evaluated data</string>
@@ -328,7 +328,7 @@
   </action>
   <action name="actionImage_arithm">
    <property name="text">
-    <string>Image arithm</string>
+    <string>Image arithmetic</string>
    </property>
   </action>
   <action name="actionDo_the_segmentation">
@@ -337,6 +337,9 @@
    </property>
   </action>
   <action name="actionComplex_segmentation">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Complex segmentation</string>
    </property>
@@ -353,6 +356,8 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="braintumoursegmentation.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -3,37 +3,11 @@
 #include <QFileDialog>
 #include <fstream>
 
-/*SPXClassifier::SPXClassifier(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::SPXClassifier)
-{
-    ui->setupUi(this);
-}*/
-
 SPXClassifier::SPXClassifier(std::vector<bts::Patient> &patients) :
 ui(new Ui::SPXClassifier),
 patients(&patients)
 {
 	ui->setupUi(this);
-
-	if (patients.size() == 0)
-	{
-		return;
-	}
-
-	/*ui->buttonBox->setEnabled(true);
-
-	// set up comboboxes
-	QStringList patientList;
-	for each (bts::Patient patient in patients)
-	{
-		patientList.push_back(QString::fromStdString(patient.getPatientId()));
-	}
-
-	currentPatient = &(patients.at(0));
-	fillSlicesComboBox(*currentPatient);
-
-	ui->comboBoxPatient->addItems(patientList);*/
 }
 
 
@@ -42,30 +16,11 @@ SPXClassifier::~SPXClassifier()
     delete ui;
 }
 
-void SPXClassifier::on_pushButtonBrowseModel_clicked()
-{
-	QFileDialog fd;
-
-	fd.setDirectory("D:\\CNTK\\repos\\CNTK\\Examples\\Image\\GettingStarted\\OutputBRATS\\Models");
-
-	/*if (fd.exec() != fd.Accepted)
-	{
-		return;
-	}*/
-
-	ui->lineEditModel->setText(fd.getOpenFileName());
-}
-
 void SPXClassifier::on_pushButtonBrowseResults_clicked()
 {
 	QFileDialog fd;
 
 	fd.setDirectory("D:\\CNTK\\repos\\CNTK\\Examples\\Image\\GettingStarted\\OutputBRATS");
-
-	/*if (fd.exec() != fd.Accepted)
-	{
-		return;
-	}*/
 	
 	ui->lineEditResults->setText(fd.getOpenFileName());
 }
@@ -84,7 +39,7 @@ void SPXClassifier::on_buttonBox_accepted()
 		processedData->setTitle("Deep learning results");
 		processedData->setPatient(currentPatient);
 			
-		// TODO prerobit to tak aby zobralo len superpixlove proccessed a ak neexistuje tak vypis nieco a nerob nic
+		//TODO handle to take only superpixel processedData and if any exist show QMessage // now always take the first
 		std::vector<bts::Slice> slices =  currentPatient->getProcessedData().at(0).getSlices();
 
 		for (int j = 0; j < slices.size(); j++)
@@ -97,18 +52,10 @@ void SPXClassifier::on_buttonBox_accepted()
 
 			for (int spxIdx = 0; spxIdx <= max; spxIdx++)
 			{
-				/*if (j == 0 && spxIdx < max / 2)
-				{
-					mask.setTo(10000, mask == spxIdx);
-				}
-				else
-				{
-					mask.setTo(0, mask == spxIdx);
-				}*/
 				cv::Mat mask2 = mask.clone();
 				mask2.setTo(10000, mask2 == spxIdx);
 
-				bool eq = cv::countNonZero(mask != mask2) == 0; // wtf???
+				bool eq = cv::countNonZero(mask != mask2) == 0; // wtf??? TODO presetri, ze co je to tu a co mozes zmazat ale pravdepodobne tu len kontroluje ze ci sa nejedna o superpixel velkosti 0
 	
 				if (eq)
 				{
@@ -130,10 +77,6 @@ void SPXClassifier::on_buttonBox_accepted()
 			cv::threshold(mask, mask, 0, 1.0, CV_THRESH_BINARY);
 			slice.setData(mask.clone());
 			slices.at(j) = slice;
-
-		
-			//mask.convertTo(mask, CV_8SC1, 1);
-			//cv::imshow(std::to_string(slice.getNumber()), mask);
 		}
 		processedData->setSlices(slices);
 

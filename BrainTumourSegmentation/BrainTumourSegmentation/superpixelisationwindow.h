@@ -16,7 +16,6 @@ class SuperpixelisationWindow : public QDialog
     Q_OBJECT
 
 public:
-    //explicit SuperpixelisationWindow(QWidget *parent = 0);
 	SuperpixelisationWindow(std::vector<bts::Patient> &patients);
     ~SuperpixelisationWindow();
 

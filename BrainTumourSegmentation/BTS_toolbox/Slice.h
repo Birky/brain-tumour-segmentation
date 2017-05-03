@@ -61,7 +61,7 @@ namespace bts
 	class EvaluatedSlice : public Slice
 	{
 		public: 
-			int FP, FN, TP, TN; // TODO prerob na private s getters a setters
+			int FP, FN, TP, TN; //TODO do it private with getters and setters
 			float jaccard, dice;
 	};
 }

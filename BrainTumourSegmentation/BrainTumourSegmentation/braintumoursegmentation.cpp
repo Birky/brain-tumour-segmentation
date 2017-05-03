@@ -48,6 +48,15 @@ void BrainTumourSegmentation::on_actionOpen_image_s_triggered()
 		return;
 	}
 
+	// check wether a folder was selected
+	if (l->selectionModel()->selectedRows().count() == 0) //TODO solve folder selection from inside the folder
+	{
+		QMessageBox::warning(this, tr("Open image/s"),
+			tr("No folder was selected!"),
+			QMessageBox::Ok);
+		return;
+	}
+
 	// get all png files from all selected dirs
 	foreach(const QModelIndex &index, l->selectionModel()->selectedRows()) // loop patients
 	{
@@ -70,9 +79,17 @@ void BrainTumourSegmentation::on_actionOpen_image_s_triggered()
 		QDir dir(dirPath);
 		dir.setNameFilters(QStringList() << "*.png" << "*.PNG"); // filter out only the png image files
 		
-
 		// get all png files
 		QFileInfoList fileInfoList = dir.entryInfoList();
+
+		// check wether there is png image files in folder
+		if (fileInfoList.size() == 0)
+		{
+			QMessageBox::warning(this, tr("Open image/s"),
+				tr("There is no .png or .PNG files in the selected folder!"),
+				QMessageBox::Ok);
+			continue;
+		}
 
 		QString modality;
 		foreach(const QFileInfo &fileInfo, fileInfoList) // loop slices of patient
@@ -80,7 +97,7 @@ void BrainTumourSegmentation::on_actionOpen_image_s_triggered()
 			QString filePath = fileInfo.absoluteFilePath();
 			QString fileName = fileInfo.baseName();
 
-			bts::Slice* slice = new bts::Slice(); // TODO spravit to cez konstruktor?
+			bts::Slice* slice = new bts::Slice(); // TODO do a constructor to fill automatically the following stuff
 			// set the filePath
 			slice->setFilePath(filePath.toStdString());
 
@@ -106,7 +123,7 @@ void BrainTumourSegmentation::on_actionOpen_image_s_triggered()
 		// set the slice count
 		inputData->setSliceCount(slices[0].size());
 
-		// TODO ak sa budes nudit spravi override setFunkciu ktora vlozi cele slices
+		// TODO do an override set function which add every slice by one call
 		for (int i = 0; i < bts::modalityCount; i++)
 		{
 			inputData->setSlices(slices[i], i);
@@ -123,164 +140,54 @@ void BrainTumourSegmentation::on_actionOpen_image_s_triggered()
 	fillTreeWidget(patients);
 
 	ui.statusBar->showMessage(QString::fromStdString("Loading data of patient(s) is done."));
-
-
-	// TODO tu vyskúšaj CNTK model načítať
-	/*std::string modelPath = "D:\\CNTK\\repos\\CNTK\\Examples\\Image\\GettingStarted\\OutputBRATS\\Models\\MLP_BRATS_3S_16epochs";
-
-	std::wstring wstrModelPath(modelPath.begin(), modelPath.end());
-
-	CNTK::Function::LoadModel(wstrModelPath, CNTK::DeviceDescriptor::GPUDevice(1));*/
-}
-
-void BrainTumourSegmentation::on_pushButton_clicked()
-{
-
-	cv::Mat img = cv::imread("E:\\FIIT_ing\\2-semester\\DP1\\Datasets\\BRATS2015_Training\\BRATS2015_Training\\HGG_16PNG\\pa0001\\Flair_068.png", CV_LOAD_IMAGE_ANYDEPTH);
-	img.convertTo(img, CV_8UC1, 0.182);
-	QImage imgIn = QImage((uchar*)img.data, img.cols, img.rows, img.step, QImage::Format_Grayscale8);
-
-
-	ui.labelTL->setPixmap(QPixmap::fromImage(imgIn));
-	ui.labelTL->setScaledContents(true);
 }
 
 void BrainTumourSegmentation::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 {
 	QTreeWidgetItem *selectedItem = ui.treeWidget->itemAt(pos);
+
 	// context menu work only for leaf nodes
 	if (selectedItem != nullptr && selectedItem->childCount() == 0)
 	{
-		// Create context menu
-		/*QMenu mainMenu(this);
-		QMenu addMenu(&mainMenu);
-
-		// create the addMenu
-		QPoint *pt = new QPoint(pos);
-		QAction *newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to TL"), this);
-		newAct->setStatusTip(tr("Add to Top the Left window."));
-		newAct->setObjectName("TL");
-		newAct->setData(*pt);
-		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
-		addMenu.addAction(newAct);
-
-		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to TR"), this);
-		newAct->setStatusTip(tr("Add to the Top Right window."));
-		newAct->setObjectName("TR");
-		newAct->setData(*pt);
-		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
-		addMenu.addAction(newAct);
-
-		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to BL"), this);
-		newAct->setStatusTip(tr("Add to the Bottom Left window."));
-		newAct->setObjectName("BL");
-		newAct->setData(*pt);
-		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
-		addMenu.addAction(newAct);
-
-		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to BR"), this);
-		newAct->setStatusTip(tr("Add to the Bottom Right window."));
-		newAct->setObjectName("BR");
-		newAct->setData(*pt);
-		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
-		addMenu.addAction(newAct);
-
-		// create mainMenu
-		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Slices"), this);
-		newAct->setObjectName("SLICES");
-		newAct->setMenu(&addMenu);
-		mainMenu.addAction(newAct);
-
-		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Evaluated slices"), this);
-		newAct->setObjectName("ESLICES");
-		newAct->setMenu(&addMenu);
-		mainMenu.addAction(newAct);*/
-
-
-
 		QMenu menu(this);
 
 		// Create context menu actions
-		// TODO z�skaj nejak� ikony a vylep�i si to
 		QMenu subMenu(&menu);
 
-
 		QPoint *pt = new QPoint(pos);
-		QAction *newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to TL"), this);
-		newAct->setStatusTip(tr("Add to Top the Left window."));
+		QAction *newAct = new QAction(QIcon(":/BrainTumourSegmentation/icons/TL.ico"), tr("&Add to TL"), this);
+		newAct->setStatusTip(tr("Add to the Top Left window."));
 		newAct->setObjectName("TL");
 		newAct->setData(*pt);
 		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
 		menu.addAction(newAct);
 
-		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to TR"), this);
+		newAct = new QAction(QIcon(":/BrainTumourSegmentation/icons/TR.ico"), tr("&Add to TR"), this);
 		newAct->setStatusTip(tr("Add to the Top Right window."));
 		newAct->setObjectName("TR");
 		newAct->setData(*pt);
 		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
 		menu.addAction(newAct);
 
-		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to BL"), this);
+		newAct = new QAction(QIcon(":/BrainTumourSegmentation/icons/BL.ico"), tr("&Add to BL"), this);
 		newAct->setStatusTip(tr("Add to the Bottom Left window."));
 		newAct->setObjectName("BL");
 		newAct->setData(*pt);
 		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
 		menu.addAction(newAct);
 
-		newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Add to BR"), this);
+		newAct = new QAction(QIcon(":/BrainTumourSegmentation/icons/BR.ico"), tr("&Add to BR"), this);
 		newAct->setStatusTip(tr("Add to the Bottom Right window."));
 		newAct->setObjectName("BR");
 		newAct->setData(*pt);
 		connect(newAct, SIGNAL(triggered()), this, SLOT(addToWindow()));
 		menu.addAction(newAct);
-
-		// For processed data add Evaluate
-	/*	if (bts::isProcessedData(selectedItem->text(0).toStdString()))
-		{
-			newAct = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Evaluate"), this);
-			newAct->setStatusTip(tr("Evaluate the processed data."));
-			newAct->setObjectName("Evaluate");
-			newAct->setData(*pt);
-			connect(newAct, SIGNAL(triggered()), this, SLOT(evaluate()));
-			menu.addAction(newAct);
-		}*/
 
 		// exec context menu at the clicked position
 		menu.exec(ui.treeWidget->mapToGlobal(pos));
 	}
 }
 
-/*void BrainTumourSegmentation::evaluate()
-{
-	QAction *act = qobject_cast<QAction *>(sender());
-
-	if (act != nullptr)
-	{
-		QPoint pos = act->data().toPoint();
-		QTreeWidgetItem *selectedItem = ui.treeWidget->itemAt(pos);
-
-		if (selectedItem != nullptr)
-		{
-			QString modality = selectedItem->text(0);
-			// get patient
-			QTreeWidgetItem *rootItem = selectedItem->parent();
-			int patientIdx = bts::getPatientByName(patients, rootItem->text(0).toStdString());
-			if (patientIdx != -1)
-			{
-				bts::Patient* patient = &(patients.at(patientIdx));
-				bts::ProcessedData* processedData = patient->getProcessedData(modality.toStdString());
-
-				std::vector<bts::Slice> slicesGT;
-				slicesGT = patient->getOrginalData()->getSlices(bts::modalityMap["GT"]);
-
-				processedData->evaluate(slicesGT);
-
-			}
-
-		}
-	}
-}
-*/
 void BrainTumourSegmentation::addToWindow()
 {
 	QAction *act = qobject_cast<QAction *>(sender());
@@ -393,11 +300,15 @@ void BrainTumourSegmentation::addToWindow()
 					labelResults->clear();
 
 					int sliceCount = patient.getOrginalData()->getSliceCount();
+					if (slider->value() == 0)
+					{
+						slider->setValue(sliceCount / 2);
+					}
 					slider->setRange(1, sliceCount);
-					slider->setValue(sliceCount / 2);
+										
 
 					// add initial slice into the selected window
-					bts::Slice slice = slices.at(sliceCount / 2);
+					bts::Slice slice = slices.at(slider->value());
 					cv::Mat img = slice.getData();
 
 					if (evaluatedSlices.size() > 0)
@@ -492,7 +403,6 @@ void BrainTumourSegmentation::on_verticalSliderBR_valueChanged(int value)
 	if (slicesBR.size() != 0)
 	{
 		changeImage(&slicesBR, &eSlicesBR, ui.labelBR, ui.labelResultsBR, value, nfBR);
-
 		// connect sliders
 		if (ui.actionConnect_sliders->isChecked())
 		{
@@ -532,6 +442,15 @@ void BrainTumourSegmentation::changeImage(std::vector<bts::Slice> *slices, std::
 
 void BrainTumourSegmentation::on_actionThreshold_triggered()
 {
+	// Check whether any data is loaded
+	if (patients.size() == 0)
+	{
+		QMessageBox::warning(this, tr("No data is loaded"),
+			tr("Please load some data, otherwise you cannot use this functionality."),
+			QMessageBox::Ok);
+		return;
+	}
+
 	ThresholdToolWindow thresholdWin(patients);
 	thresholdWin.setModal(this);
 	thresholdWin.exec();
@@ -547,6 +466,7 @@ void BrainTumourSegmentation::fillTreeWidget(std::vector<bts::Patient> patients)
 		// Add patient node
 		QTreeWidgetItem *treePatient = new QTreeWidgetItem(ui.treeWidget);
 		treePatient->setText(0, QString::fromStdString(patient.getPatientId()));
+		treePatient->setExpanded(true);
 
 		// Add modality nodes
 		for (std::map<std::string, int>::iterator it = bts::modalityMap.begin(); it != bts::modalityMap.end(); ++it)
@@ -569,6 +489,15 @@ void BrainTumourSegmentation::fillTreeWidget(std::vector<bts::Patient> patients)
 }
 void BrainTumourSegmentation::on_actionShow_results_triggered()
 {
+	// Check whether any data is loaded
+	if (patients.size() == 0)
+	{
+		QMessageBox::warning(this, tr("No data is loaded"),
+			tr("Please load some data, otherwise you cannot use this functionality."),
+			QMessageBox::Ok);
+		return;
+	}
+
 	ResultWindow resultWin(patients);
 	resultWin.setModal(false);
 	resultWin.exec();
@@ -576,6 +505,15 @@ void BrainTumourSegmentation::on_actionShow_results_triggered()
 
 void BrainTumourSegmentation::on_actionImage_arithm_triggered()
 {
+	// Check whether any data is loaded
+	if (patients.size() == 0)
+	{
+		QMessageBox::warning(this, tr("No data is loaded"),
+			tr("Please load some data, otherwise you cannot use this functionality."),
+			QMessageBox::Ok);
+		return;
+	}
+
 	ImageArithmWindow imgArithmWin(patients);
 	imgArithmWin.setModal(true);
 	imgArithmWin.exec();
@@ -585,92 +523,16 @@ void BrainTumourSegmentation::on_actionImage_arithm_triggered()
 
 void BrainTumourSegmentation::on_actionDo_the_segmentation_triggered()
 {
-/*	// TODO dočasné, neskôr spravit okno s vyberom pacienta a modality, iba orginalne data
-	std::vector<bts::Slice> slices = patients.at(0).getOrginalData()->getSlices(bts::modalityMap["Flair"]);
-	// TODO mozno by bolo dobre najprv spravit korekciu a robit to natom
-	// TODO mozno aj to morfologické otvorenie
-
-	float maxIntensity = patients.at(0).getOrginalData()->getGlobalIntensityMax();
-	// Sprav threshold
-	std::vector<bts::Slice> segmentedSlices = bts::doOptimalThreshold(slices, 10, 1.5, 50, 1 / (float)maxIntensity, true);
-
-	// Z thresholdu vypočítaj centroid a iné
-	long x = 0, y = 0, z = 0;
-	int count = 0;
-	float intensity = 0.0;
-
-	for (int i = 0; i < segmentedSlices.size(); i++)
+	// Check whether any data is loaded
+	if (patients.size() == 0)
 	{
-		bts::Slice slice = segmentedSlices.at(i);
-		bts::Slice orgSlice = slices.at(i);
-		for (int j = 0; j < 240; j++)
-		{
-			for (int k = 0; k < 240; k++)
-			{
-				if (slice.getData().at<float>(j, k) == 1)
-				{
-					count++;
-					x += k;
-					y += j;
-					z += i;
-					intensity += orgSlice.getData().at<unsigned short>(j, k);
-				}
-			}
-		}
-	}
-	x /= count;
-	y /= count;
-	z /= count;
-	intensity /= (float)count;
-	//intensity /= (float)maxIntensity;
-
-	// Prejdi všetky voxely a vypočítaj špeciálnu vzdialenosť od centroidu
-	std::vector<bts::Slice> processedSlices;
-	for (int i = 0; i < segmentedSlices.size(); i++)
-	{
-		bts::Slice slice = slices.at(i);
-		cv::Mat outputImage = slice.getData();
-		outputImage.convertTo(outputImage, CV_32F);
-		for (int j = 0; j < 240; j++)
-		{
-			for (int k = 0; k < 240; k++)
-			{
-				float xyzDif = sqrt(pow(x - k, 2) + pow(y - j, 2) + pow(z - i, 2));
-				float intDif = (intensity - slice.getData().at<unsigned short>(j, k))/maxIntensity;
-				float totalDif = xyzDif*2 + intDif*960;
-				
-
-				// Save results
-				if (totalDif < 100)
-				{
-					outputImage.at<float>(j, k) = 1.0;
-				}
-else
-{
-	outputImage.at<float>(j, k) = 0.0;
-}
-			}
-		}
-		//cv::imshow(std::to_string(i), outputImage);
-		slice.setData(outputImage);
-		processedSlices.push_back(slice);
+		QMessageBox::warning(this, tr("No data is loaded"),
+			tr("Please load some data, otherwise you cannot use this functionality."),
+			QMessageBox::Ok);
+		return;
 	}
 
-	bts::ProcessedData *processedData = new bts::ProcessedData();
-	processedData->setSlices(processedSlices);
-	processedData->setPatient(&patients.at(0));
-	processedData->setTitle("Segmentation");
-
-
-	// Evaluate the new processed data
-	std::vector<bts::Slice> slicesGT;
-	slicesGT = patients.at(0).getOrginalData()->getSlices(bts::modalityMap["GT"]);
-	processedData->evaluate(slicesGT);
-
-	std::vector<bts::ProcessedData> pd = patients.at(0).getProcessedData();
-	pd.push_back(*processedData);
-	patients.at(0).setProcessedData(pd);*/
-
+	// Temporary. Run the method 1 on all of the loaded patients
 	for (int i = 0; i < patients.size(); i++)
 	{
 		bts::doComplexSegmentation(&(patients.at(i)));
@@ -681,9 +543,9 @@ else
 
 void BrainTumourSegmentation::on_actionComplex_segmentation_triggered()
 {
-	ComplexSegmentation imgArithmWin(patients);
-	imgArithmWin.setModal(true);
-	imgArithmWin.exec();
+	ComplexSegmentation complexSegmentation(patients);
+	complexSegmentation.setModal(true);
+	complexSegmentation.exec();
 
 	fillTreeWidget(patients);
 }
@@ -748,6 +610,16 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 
 			// Get all mha/mhd files
 			QFileInfoList fileInfoList = modalityDir.entryInfoList();
+
+			// check wether there is any .mha or .mhd files in folder
+			if (fileInfoList.size() == 0)
+			{
+				QMessageBox::warning(this, tr("Open image/s"),
+					tr("There is no .mha or .mhd files in the selected folder!"),
+					QMessageBox::Ok);
+				continue;
+			}
+
 			foreach(const QFileInfo &fileInfo, fileInfoList) // loop files
 			{
 				// load mha/mhd file and save it to cv::Mat
@@ -788,12 +660,6 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 					{
 						// set slice data
 						btsSlice->setData(ocvImage.clone());
-
-						//TODO len docasne pre uloženie png
-						/*if (i == 82 && modality.compare("Flair") == 0)
-						{
-						imwrite("D:\\FIIT\\2-semester\\DP1\\MATLAB\\pat24_flair83.png", ocvImage);
-						}*/
 					}
 
 					// push_back the new slice
@@ -817,27 +683,12 @@ void BrainTumourSegmentation::on_actionOpen_mha_mhd_files_triggered()
 		patients.push_back(*patient);
 		inputData->setPatient(&(patients.back()));
 
-		//********************************
-		// After loading do the segmentation too and evaluate
-		//*******************************
-		//bts::doComplexSegmentation(&(patients.back()));
-		//bts::doComplexSegmentation(patient);
-
 		// Set the progress bar
 		pbDone++;
 		pbState = pbDone / (float)pbTotal;
 		ui.progressBar->setValue(pbState * 100);
 		ui.progressBar->repaint();
-
-		// CLEAR BECAUSE NOT ENOUGH RAM
-		//free(inputData);
-		//free(patient);
-		//patients.clear();
 	}
-
-	// Convert 3D volume to txt format of CNTK
-	//std::vector<bool> sequences = { false, false, false, true };
-	//convertMhaToCNTKtxt(patients, sequences); // T1, T1c, T2, FLAIR
 	
 	fillTreeWidget(patients);
 
@@ -864,6 +715,15 @@ QString BrainTumourSegmentation::getModality(QString fileName)
 }
 void BrainTumourSegmentation::on_actionSuperpixels_triggered()
 {
+	// Check whether any data is loaded
+	if (patients.size() == 0)
+	{
+		QMessageBox::warning(this, tr("No data is loaded"),
+			tr("Please load some data, otherwise you cannot use this functionality."),
+			QMessageBox::Ok);
+		return;
+	}
+
 	SuperpixelisationWindow superWin(patients);
 	superWin.setModal(true);
 	superWin.exec();
@@ -873,6 +733,15 @@ void BrainTumourSegmentation::on_actionSuperpixels_triggered()
 
 void BrainTumourSegmentation::on_actionSPX_classification_triggered()
 {
+	// Check whether any data is loaded
+	if (patients.size() == 0)
+	{
+		QMessageBox::warning(this, tr("No data is loaded"),
+			tr("Please load some data, otherwise you cannot use this functionality."),
+			QMessageBox::Ok);
+		return;
+	}
+
 	SPXClassifier spxClassifierWin(patients);
 	spxClassifierWin.setModal(true);
 	spxClassifierWin.exec();

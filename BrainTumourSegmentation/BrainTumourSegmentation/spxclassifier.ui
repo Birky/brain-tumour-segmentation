@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>106</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>260</y>
+     <y>70</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -35,41 +35,24 @@
      <x>20</x>
      <y>10</y>
      <width>371</width>
-     <height>106</height>
+     <height>61</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
     <item row="0" column="0">
-     <widget class="QLabel" name="labelModel">
+     <widget class="QLabel" name="labelResults">
       <property name="text">
-       <string>Model:</string>
+       <string>Results:</string>
       </property>
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QLineEdit" name="lineEditModel"/>
+     <widget class="QLineEdit" name="lineEditResults"/>
     </item>
     <item row="1" column="1">
-     <widget class="QPushButton" name="pushButtonBrowseModel">
-      <property name="text">
-       <string>Browse...</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
      <widget class="QPushButton" name="pushButtonBrowseResults">
       <property name="text">
        <string>Browse...</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLineEdit" name="lineEditResults"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="labelResults">
-      <property name="text">
-       <string>Results:</string>
       </property>
      </widget>
     </item>

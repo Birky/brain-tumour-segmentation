@@ -15,7 +15,6 @@ class ResultWindow : public QDialog
     Q_OBJECT
 
 public:
-   // explicit ResultWindow(QWidget *parent = 0);
 	ResultWindow(std::vector<bts::Patient> &patients);
     ~ResultWindow();
 

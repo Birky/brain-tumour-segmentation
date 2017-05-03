@@ -8,11 +8,12 @@
 
 namespace bts
 {
-	void convertMhaToCNTKtxt(std::vector<bts::Patient> &patients, std::vector<bool> sequences) // TODO tie sekvencie eöte nejak prerobiù
+	// This function was created to produce input for convolutional neural networks, but we did not use it
+	void convertMhaToCNTKtxt(std::vector<bts::Patient> &patients, std::vector<bool> sequences) //TODO remake these sequences
 	{
-		// Teraz zoberieem len FLAIR a GT pre label
+		// Now only FLAIR, and GT for label
 		std::ofstream outfile;
-		outfile.open("train_flair_slices.txt", std::ios_base::app);
+		outfile.open("training_flair_slices.txt", std::ios_base::app);
 
 		for each (Patient pat in patients)
 		{
@@ -73,8 +74,6 @@ namespace bts
 			cv::Mat imgB = slicesB.at(i).getData();
 			cv::threshold(imgA, imgA, 0, 1, CV_THRESH_TOZERO);
 			cv::threshold(imgB, imgB, 0, 1, CV_THRESH_TOZERO);
-			//imgA.convertTo(imgA, CV_32F, nfA);
-			//imgB.convertTo(imgB, CV_32F, nfB);
 			cv::Mat result;
 			cv::bitwise_and(imgA, imgB, result);
 			slicesA.at(i).setData(result);
@@ -107,12 +106,12 @@ namespace bts
 			{
 				for (int x = 0; x < volume.at(z).getData().cols; x++)
 				{
-					if (volume.at(z).getData().at<float>(y, x) == 1.0) // TODO skontroluj ci sedi typ na FLOAT
+					if (volume.at(z).getData().at<float>(y, x) == 1.0)
 					{
 						currentRegion = growingRegion(volume, cv::Point3i(x, y, z), 0);
 						currentCount = countNonZero(currentRegion);
 
-						// If it is bigger or equal to half we found the biggest region
+						// If it is bigger or equal to the half we found the biggest region
 						if (currentCount >= originCount)
 						{
 							return currentRegion;
@@ -120,10 +119,10 @@ namespace bts
 						else if (currentCount > biggestCount)
 						{
 							biggestCount = currentCount;
-							biggestRegion = currentRegion; // TODO skontroluj ci sa to kopiruje alebo ukazuje@@@ musi to kopirovat
+							biggestRegion = currentRegion;
 						}
 						// Substruct the currentRegion from the volume to do not search the same region again
-						volume = substruct(volume, currentRegion, 1, 1); // TODO skontroluj ci to robi spravne
+						volume = substruct(volume, currentRegion, 1, 1);
 					}
 				}
 			}
@@ -139,17 +138,16 @@ namespace bts
 		std::vector<bts::Slice> slices = patient->getOrginalData()->getSlices(bts::modalityMap["Flair"]);
 
 		// Do optimal thresholding
-		//float maxIntensity = patient->getOrginalData()->getGlobalIntensityMax();
 		float maxIntensity = float(patient->getOrginalData()->getIntensityMax(bts::modalityMap["Flair"]));
 
 		std::vector<bts::Slice> thresholdedSlices = bts::doOptimalThreshold(slices, 10, 1.5, 50, 1 / (float)maxIntensity, true);
 
-		// TODO docasne kym otestujem
-		//processedSlices = getBiggestConnectedRegion(thresholdedSlices);		
-		processedSlices = thresholdedSlices;
+		// Get the biggest continuos region  using the growing region
+		processedSlices = getBiggestConnectedRegion(thresholdedSlices);		
 
+		// *** deprecated version ***
 		// Calculate the seed/centroid
-	/*	cv::Point3i centroid = getCentroid(thresholdedSlices);
+		/*cv::Point3i centroid = getCentroid(thresholdedSlices);
 
 		// Patch the seed
 		//if (thresholdedSlices.at(centroid.z).getData().at<float>(centroid.y, centroid.x) != 1.0)
@@ -168,8 +166,7 @@ namespace bts
 		// Set up the results
 		bts::ProcessedData *processedData = new bts::ProcessedData();
 		processedData->setSliceCount(slices.size());
-		processedData->setSlices(processedSlices); // TODO 
-		//processedData->setSlices(thresholdedSlices);
+		processedData->setSlices(processedSlices); 
 		processedData->setPatient(patient);
 		processedData->setTitle("Complex segmentation: " + patient->getPatientId());
 
@@ -182,7 +179,6 @@ namespace bts
 		std::vector<bts::ProcessedData> pd = patient->getProcessedData();
 		pd.push_back(*processedData);
 		patient->setProcessedData(pd);
-		//free(processedData);
 	}
 
 	cv::Point3i findNearestPositive(std::vector<bts::Slice> mask, cv::Point3i centroid)
@@ -244,7 +240,6 @@ namespace bts
 		std::vector<cv::Point3i> queue;
 		queue.push_back(seed);
 
-		// TODO umoûniù cez gui aj neorginalne data dat ako masku
 		int *nxp, *nyp, *nzp;
 		int ncount;
 		if (connectivity == 0)
@@ -279,11 +274,9 @@ namespace bts
 			// check whether valid voxel
 			if (mask.at(curVox.z).getData().at<float>(curVox.y, curVox.x) == 1.0)
 			{
-				// TODO doplni este aj impakt intenzity ci ineho, susedstva napr.
+				// The seed grows only in the mask
 				processedSlices.at(curVox.z).getData().at<float>(curVox.y, curVox.x) = 1.0;
-				//int size = sizeof(nzp);
-				//int size2 = sizeof(*nzp);
-				//int size3 = sizeof(&nzp);
+
 				// find neighbours
 				for (int i = 0; i < ncount; i++)
 				{
@@ -318,7 +311,6 @@ namespace bts
 		for (int i = 0; i < slices.size(); i++)
 		{
 			bts::Slice slice = slices.at(i);
-			//bts::Slice orgSlice = slices.at(i);
 			for (int j = 0; j < height; j++)
 			{
 				for (int k = 0; k < width; k++)
@@ -329,7 +321,6 @@ namespace bts
 						x += k;
 						y += j;
 						z += i;
-						//intensity += orgSlice.getData().at<unsigned short>(j, k);
 					}
 				}
 			}
@@ -344,7 +335,6 @@ namespace bts
 			y /= count;
 			z /= count;
 		}
-		//intensity /= (double)count;
 
 		return cv::Point3i(x, y, z);
 	}
@@ -660,7 +650,140 @@ namespace bts
 		return data;
 	}
 
-	//std::vector<Slice> calculateSuperpixels(bts::Patient* patient, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features)
+	std::vector<Slice> calculateSuperpixels(const std::vector<bts::Slice>& slices, const std::vector<bts::Slice>& gtSlices, float nf, std::map<std::string, float> *configuration)
+	{
+		// Configuration variables with default values
+		spxCompactness = 0.05;
+		spxSideSize = 16;
+		iterations = 5;
+		bool enforceConnectivity = true;
+		std::vector<bool> calculateFeatures = { true/*calculateFeatures?*/, true/*MeanHistogram*/, true/*MeanHistogramWithNeighbours*/, true/*Entropy*/, true/*Location - Angle and Distance*/ };
+		int colorSpace = 2; // 0 - CIELab, 1 - XYZ, 2 - RGB
+		bool onlyFlairFeatures = false;
+		trainingPurpose = false;
+
+
+		// Get and set selected configurations
+		float value;
+		std::map<std::string, float>::iterator it;
+		spxCompactness = (it = configuration->find("compactness")) != configuration->end() ? it->second : spxCompactness;
+		spxSideSize = (it = configuration->find("spxSideSize")) != configuration->end() ? it->second : spxSideSize;
+		iterations = (it = configuration->find("iterations")) != configuration->end() ? it->second : iterations;
+		enforceConnectivity = (it = configuration->find("enforceConnectivity")) != configuration->end() ? it->second : enforceConnectivity; // Dangerous, in case of precision, must be exact 0 for false
+		colorSpace = (it = configuration->find("colorSpace")) != configuration->end() ? it->second : colorSpace;
+		onlyFlairFeatures = (it = configuration->find("onlyFlairFeatures")) != configuration->end() ? it->second : onlyFlairFeatures; // Dangerous, in case of precision, must be exact 0 for false
+		trainingPurpose = (it = configuration->find("trainingPurpose")) != configuration->end() ? it->second : trainingPurpose;
+
+		int featuresCount = 4;
+		for (int i = 0; i <= featuresCount; i++)
+		{
+			calculateFeatures.at(i) = (it = configuration->find("features" + std::to_string(i))) != configuration->end() ? it->second : calculateFeatures.at(i);
+		}
+
+		std::vector<Slice> processedSlices;
+
+		// Getting local max value (per sequence) - in case of global max value the results are worse because of big intensity differences between different sequences
+		
+		// gSLICr settings
+		gSLICr::objects::settings mySettings;
+		mySettings.img_size.x = slices.at(0).getData().cols;
+		mySettings.img_size.y = slices.at(0).getData().rows;
+		mySettings.spixel_size = spxSideSize;
+		mySettings.coh_weight = spxCompactness;
+		mySettings.no_iters = iterations;
+		mySettings.color_space = (gSLICr::COLOR_SPACE) colorSpace;
+		mySettings.seg_method = gSLICr::GIVEN_SIZE;
+		mySettings.do_enforce_connectivity = enforceConnectivity;
+
+		// instantiate a core_engine
+		gSLICr::engines::core_engine* gSLICrEngine = new gSLICr::engines::core_engine(mySettings);
+
+		// gSLICr takes gSLICr::UChar4Image as input and out put
+		gSLICr::UChar4Image* inImg = new gSLICr::UChar4Image(mySettings.img_size, true, true);
+		gSLICr::UChar4Image* outImg = new gSLICr::UChar4Image(mySettings.img_size, true, true);
+		cv::Size s(mySettings.img_size.x, mySettings.img_size.y);
+
+		// Calculate the superpixels for each slice
+		for (int i = 0; i < slices.size(); i++)
+		{
+			cv::Mat boundaryDrawFrame;
+			boundaryDrawFrame.create(s, CV_8UC1);
+			Slice slice = slices.at(i);
+
+			cv::Mat frame = slice.getData();
+
+			frame.convertTo(frame, CV_8UC1, nf * 255); // TODO str·came tu presnosù
+
+			gSLICrLoadImage(frame, inImg);
+
+			gSLICrEngine->Process_Frame(inImg);
+
+			gSLICrEngine->Draw_Segmentation_Result(outImg);
+
+			gSLICrLoadImage(outImg, boundaryDrawFrame);
+
+			// Get the mask
+			const gSLICr::IntImage *mask = gSLICrEngine->Get_Seg_Res();
+			const int* mask_ptr = mask->GetData(MEMORYDEVICE_CPU);
+
+			// TODO preco nepouzivam tento maskMat pre CalculateFetures kde sa vypocitava vector superpixelov z masky, bolo by to sikovnejsie, prerob to!!!
+			cv::Mat maskMat;
+			maskMat.create(s, CV_32SC1);
+			for (int y = 0; y < mySettings.img_size.y; y++)
+			for (int x = 0; x < mySettings.img_size.x; x++)
+			{
+				int idx = x + y * mySettings.img_size.x;
+				maskMat.at<int>(y, x) = mask_ptr[idx];
+			}
+
+			slice.setData(boundaryDrawFrame);
+			slice.setSpxMask(maskMat);
+
+			processedSlices.push_back(slice);
+			// Calculate the features
+			if (calculateFeatures.at(0))
+			{
+				// Get superpixels count
+				int countSPX = mask_ptr[0];
+				for (int j = 1; j < mySettings.img_size.x * mySettings.img_size.y; j++)
+				{
+					countSPX = max(countSPX, mask_ptr[j]);
+				}
+				countSPX++;
+
+				// Get the centroid of the volume
+				std::vector<bts::Slice> thresholdedSlices = bts::doThreshold(slices, 1, 1);
+				cv::Point3i centroid = getCentroid(thresholdedSlices);
+				if (centroid.x == -1)
+				{
+					continue;
+				}
+
+				// Get ground truth image
+				cv::Mat gtImage = gtSlices.at(i).getData();
+
+				std::vector<std::vector<float>> features;
+				std::vector<bts::Slice> fSlices;
+				std::vector<float> fNFs;
+
+				// TODO prerobit calculateFeatures, aby ti vratilo vypocitane features a potom to vypisat do suboru az tu vonku! Potom by stacilo pocitat tumorousFeatures iba tu
+				fSlices.push_back(slices.at(i));
+				fNFs.push_back(nf);
+				calculateFeaturesOfSuperpixels(fSlices, gtImage, mask_ptr, countSPX, fNFs, centroid, calculateFeatures, features);
+
+				if (!evaluateSPX && features.size() != 0)
+				{
+					// Store the superpixels features to file
+					std::string fileName = "superpixel_train_4features.txt"; // TODO dynamic name
+					saveSuperpixelsFeaturesToFile(features, fileName);
+				}
+
+			}
+		}
+		return processedSlices;
+			
+	}
+
 	std::vector<Slice> calculateSuperpixels(bts::Patient* patient, std::map<std::string, float> *configuration)
 	{
 		// Configuration variables with default values

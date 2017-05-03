@@ -96,22 +96,22 @@ public:
         actionConnect_sliders->setObjectName(QStringLiteral("actionConnect_sliders"));
         actionConnect_sliders->setCheckable(true);
         QIcon icon;
-        icon.addFile(QStringLiteral("../icons/Disconnect.ico"), QSize(), QIcon::Normal, QIcon::Off);
-        icon.addFile(QStringLiteral("../icons/connect.ico"), QSize(), QIcon::Normal, QIcon::On);
+        icon.addFile(QStringLiteral(":/BrainTumourSegmentation/icons/Disconnect.ico"), QSize(), QIcon::Normal, QIcon::Off);
+        icon.addFile(QStringLiteral(":/BrainTumourSegmentation/icons/connect.ico"), QSize(), QIcon::Normal, QIcon::On);
         actionConnect_sliders->setIcon(icon);
         actionGlobal_local_normalization = new QAction(BrainTumourSegmentationClass);
         actionGlobal_local_normalization->setObjectName(QStringLiteral("actionGlobal_local_normalization"));
         actionGlobal_local_normalization->setCheckable(true);
         QIcon icon1;
-        icon1.addFile(QStringLiteral("../icons/webapp.png"), QSize(), QIcon::Normal, QIcon::Off);
-        icon1.addFile(QStringLiteral("../icons/local_seo-512.png"), QSize(), QIcon::Normal, QIcon::On);
+        icon1.addFile(QStringLiteral(":/BrainTumourSegmentation/icons/webapp.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon1.addFile(QStringLiteral(":/BrainTumourSegmentation/icons/local_seo-512.png"), QSize(), QIcon::Normal, QIcon::On);
         actionGlobal_local_normalization->setIcon(icon1);
         actionSegmented_Evaluated_data = new QAction(BrainTumourSegmentationClass);
         actionSegmented_Evaluated_data->setObjectName(QStringLiteral("actionSegmented_Evaluated_data"));
         actionSegmented_Evaluated_data->setCheckable(true);
         QIcon icon2;
-        icon2.addFile(QStringLiteral("../icons/Alecive-Flatwoken-Apps-Workspace-Switcher-Top-Left.ico"), QSize(), QIcon::Normal, QIcon::Off);
-        icon2.addFile(QStringLiteral("../icons/Alecive-Flatwoken-Apps-Workspace-Switcher-Right-Top.ico"), QSize(), QIcon::Normal, QIcon::On);
+        icon2.addFile(QStringLiteral(":/BrainTumourSegmentation/icons/brainoff.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon2.addFile(QStringLiteral(":/BrainTumourSegmentation/icons/brainon.png"), QSize(), QIcon::Normal, QIcon::On);
         actionSegmented_Evaluated_data->setIcon(icon2);
         actionShow_results = new QAction(BrainTumourSegmentationClass);
         actionShow_results->setObjectName(QStringLiteral("actionShow_results"));
@@ -121,6 +121,7 @@ public:
         actionDo_the_segmentation->setObjectName(QStringLiteral("actionDo_the_segmentation"));
         actionComplex_segmentation = new QAction(BrainTumourSegmentationClass);
         actionComplex_segmentation->setObjectName(QStringLiteral("actionComplex_segmentation"));
+        actionComplex_segmentation->setEnabled(false);
         actionOpen_mha_mhd_files = new QAction(BrainTumourSegmentationClass);
         actionOpen_mha_mhd_files->setObjectName(QStringLiteral("actionOpen_mha_mhd_files"));
         actionSPX_classification = new QAction(BrainTumourSegmentationClass);
@@ -324,7 +325,7 @@ public:
         BrainTumourSegmentationClass->setWindowTitle(QApplication::translate("BrainTumourSegmentationClass", "Brain Tumour Segmentation", 0));
         actionOpen_image_s->setText(QApplication::translate("BrainTumourSegmentationClass", "Open image(s)", 0));
         actionAuthor->setText(QApplication::translate("BrainTumourSegmentationClass", "Author", 0));
-        actionThreshold->setText(QApplication::translate("BrainTumourSegmentationClass", "Threshold", 0));
+        actionThreshold->setText(QApplication::translate("BrainTumourSegmentationClass", "Thresholding", 0));
         actionSuperpixels->setText(QApplication::translate("BrainTumourSegmentationClass", "SPX calculation", 0));
         actionConnect_sliders->setText(QApplication::translate("BrainTumourSegmentationClass", "Connect/disconnect sliders", 0));
 #ifndef QT_NO_TOOLTIP
@@ -339,7 +340,7 @@ public:
         actionSegmented_Evaluated_data->setToolTip(QApplication::translate("BrainTumourSegmentationClass", "<html><head/><body><p>Segmented/Evaluated processed data</p></body></html>", 0));
 #endif // QT_NO_TOOLTIP
         actionShow_results->setText(QApplication::translate("BrainTumourSegmentationClass", "Show results", 0));
-        actionImage_arithm->setText(QApplication::translate("BrainTumourSegmentationClass", "Image arithm", 0));
+        actionImage_arithm->setText(QApplication::translate("BrainTumourSegmentationClass", "Image arithmetic", 0));
         actionDo_the_segmentation->setText(QApplication::translate("BrainTumourSegmentationClass", "Do the segmentation", 0));
         actionComplex_segmentation->setText(QApplication::translate("BrainTumourSegmentationClass", "Complex segmentation", 0));
         actionOpen_mha_mhd_files->setText(QApplication::translate("BrainTumourSegmentationClass", "Open mha/mhd file(s)", 0));

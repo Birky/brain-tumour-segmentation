@@ -4,8 +4,8 @@
 #include "Slice.h"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui.hpp"
-// if i include proccesseddata.h i get undeclared identifier modalityCount because of crossincluding can be fix with forward declaraction
-#include "D:/FIIT/GIT/Source/Repos/gSLICr/gSLICr-master/gSLICr_Lib/gSLICr.h"
+// if Wwe include proccesseddata.h i get undeclared identifier modalityCount because of crossincluding can be fix with forward declaraction
+#include "../gSLICr/gSLICr-master/gSLICr_Lib/gSLICr.h"//TODO oprav cesty na relativne
 #include <map>
 #include <set>
 
@@ -66,12 +66,12 @@ namespace bts
 	
 	void doComplexSegmentation(Patient* patient);
 
-	// TODO prerobit
+	//TODO remake
 	void convertMhaToCNTKtxt(std::vector<bts::Patient> &patients, std::vector<bool> sequences);
 
 	// Superpixelisation
-	//std::vector<Slice> calculateSuperpixels(bts::Patient* patient, int spxSize, float compactness, int iterations, bool enforceConnectivity, std::vector<bool> features);
 	std::vector<Slice> calculateSuperpixels(bts::Patient* patient, std::map<std::string, float> *configuration);
+	std::vector<Slice> calculateSuperpixels(const std::vector<bts::Slice>& slices, const std::vector<bts::Slice>& gtSlices, float nf, std::map<std::string, float> *configuration);
 	void gSLICrLoadImage(const cv::Mat& inimg, gSLICr::UChar4Image* outimg);
 	void gSLICrLoadImage(const gSLICr::UChar4Image* inimg, cv::Mat& outimg);
 	void gSLICrLoadImage(const gSLICr::IntImage* inimg, cv::Mat& outimg);

@@ -14,7 +14,6 @@ class ComplexSegmentation : public QDialog
     Q_OBJECT
 
 public:
-    //explicit ComplexSegmentation(QWidget *parent = 0);
 	ComplexSegmentation(std::vector<bts::Patient> &patients);
 	~ComplexSegmentation();
 

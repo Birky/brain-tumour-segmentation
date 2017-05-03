@@ -2,13 +2,6 @@
 #include "ui_thresholdtoolwindow.h"
 #include <iomanip>
 
-/*ThresholdToolWindow::ThresholdToolWindow(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::ThresholdToolWindow)
-{
-    ui->setupUi(this);
-}*/
-
 ThresholdToolWindow::ThresholdToolWindow(std::vector<bts::Patient> &patients) :
 ui(new Ui::ThresholdToolWindow),
 patients(&patients)
@@ -56,7 +49,7 @@ void ThresholdToolWindow::on_pushButtonOK_clicked()
 		// get modality
 		int modalityIndex = bts::modalityMap[ui->comboBoxSlices->currentText().toStdString()];
 		processedData->setModality(modalityIndex);
-		nf = 1 / float(currentPatient->getOrginalData()->getIntensityMax(modalityIndex)); // TODO použi lokálne èi globálne? toto treba zvlast na tomto window implementovat
+		nf = 1 / float(currentPatient->getOrginalData()->getIntensityMax(modalityIndex)); //TODO add to GUI a choice of global or local normalization 
 		//nf = 1 / float(currentPatient->getOrginalData()->getGlobalIntensityMax());
 		slices = currentPatient->getOrginalData()->getSlices(modalityIndex);
 	}

@@ -2,6 +2,7 @@
 #define BRAINTUMOURSEGMENTATION_H
 
 #include <QtWidgets/QMainWindow>
+#include <QMessageBox>
 #include "ui_braintumoursegmentation.h"
 #include "../BTS_toolbox/segfunc.h"
 #include "../BTS_toolbox/Patient.h"
@@ -17,13 +18,9 @@ public:
 private slots:
     void on_actionOpen_image_s_triggered();
 
-    void on_pushButton_clicked();
-
     void on_treeWidget_customContextMenuRequested(const QPoint &pos);
 
 	void addToWindow();
-
-	//void evaluate();
 
     void on_verticalSliderTL_valueChanged(int value);
 
@@ -52,9 +49,6 @@ private slots:
 private:
 	Ui::BrainTumourSegmentationClass ui;
 	float nfTL = 1, nfTR = 1, nfBL = 1, nfBR = 1;
-	// TODO ak chces spravit dynamicky pocet sliderov
-	// jednak treba spravit vector instancii
-	// a dedit od QVerticalSlider a doplnit ho o nf a slices
 	std::vector<bts::Slice> slicesTL, slicesTR, slicesBL, slicesBR;
 	std::vector<bts::EvaluatedSlice> eSlicesTL, eSlicesTR, eSlicesBL, eSlicesBR;
 

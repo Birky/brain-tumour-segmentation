@@ -14,7 +14,6 @@ class ImageArithmWindow : public QDialog
     Q_OBJECT
 
 public:
-   // explicit ImageArithmWindow(QWidget *parent = 0);
 	ImageArithmWindow(std::vector<bts::Patient> &patients);
     ~ImageArithmWindow();
 

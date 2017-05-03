@@ -2,14 +2,7 @@
 #include "ui_complexsegmentation.h"
 #include <intrin.h>
 
-/*ComplexSegmentation::ComplexSegmentation(QWidget *parent) :
-	QDialog(parent),
-	ui(new Ui::ComplexSegmentation)
-	{
-	ui->setupUi(this);
-	}
-	*/
-
+//TODO under construction, finish it for method1
 ComplexSegmentation::ComplexSegmentation(std::vector<bts::Patient> &patients) :
 ui(new Ui::ComplexSegmentation),
 patients(&patients)

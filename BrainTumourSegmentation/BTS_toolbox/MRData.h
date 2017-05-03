@@ -1,5 +1,4 @@
 #pragma once
-//#include "Patient.h"
 #include "Slice.h"
 #include "segfunc.h"
 #include <opencv2/core/core.hpp>
