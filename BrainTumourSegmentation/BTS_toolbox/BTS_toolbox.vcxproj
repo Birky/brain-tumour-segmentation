@@ -32,6 +32,9 @@
     <ClCompile Include="segfunc.cpp" />
     <ClCompile Include="Slice.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{378867AD-1FB0-4FD2-ABAB-49C3B2F89BA1}</ProjectGuid>
     <RootNamespace>BTS_toolbox</RootNamespace>

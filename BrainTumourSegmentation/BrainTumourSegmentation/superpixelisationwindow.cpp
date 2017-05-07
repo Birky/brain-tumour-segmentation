@@ -165,10 +165,6 @@ void SuperpixelisationWindow::superpixelisationSpecificData()
 
 	// one sequence 3 times
 	processedData->setSlices(bts::calculateSuperpixels(slices, gtSlices, nf, &config));
-	//processedData->setSlices(bts::calculateSuperpixels(slices, gtSlices, nf, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
-	// 3 different sequences 
-	//processedData->setSlices(bts::calculateSuperpixels(currentPatient, ui->spinBoxSPXSize->value(), ui->doubleSpinBoxCompactness->value(), ui->spinBoxIterations->value(), ui->checkBoxEnforceConnectivity->isChecked(), features));
-	//processedData->setSlices(bts::calculateSuperpixels(currentPatient, &config));
 
 	std::stringstream stream;
 	stream << std::fixed << std::setprecision(2) << ui->doubleSpinBoxCompactness->value();
@@ -194,7 +190,6 @@ void SuperpixelisationWindow::superpixelisationSpecificData()
 
 	this->close();
 }
-
 
 void SuperpixelisationWindow::superpixelisationAllData()
 {

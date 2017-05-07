@@ -80,7 +80,6 @@ namespace bts
 	std::vector<std::vector<std::vector<int>>> getAllPixelIntensitiesOfSuperpixels(const std::vector<bts::Slice>& fSlices, const std::vector<std::vector<cv::Point2i>>& spxLoc);
 
 	// Feature extraction
-	void calculateFeaturesOfSuperpixels(const Slice& slice, const cv::Mat& gt, const int* mask, int noSPX, float nf, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& features);
 	void calculateFeaturesOfSuperpixels(const std::vector<bts::Slice>& fSlices, const cv::Mat& gt, const int* mask, int noSPX, const std::vector<float>& fNFs, cv::Point3i centroid, std::vector<bool> calculateFeatures, std::vector<std::vector<float>>& features);
 	void saveSuperpixelsFeaturesToFile(std::vector<std::vector<float>>& features, std::string fileName);
 	bool isAllIntesitiesLess(int threshold, std::vector<int> superpixel);

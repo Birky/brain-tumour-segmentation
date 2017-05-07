@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="BrainTumourSegmentation" Collapsed="true">
+    <Position X="5.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgCCBAQAAEASEgFSAAAAAAAADAEGJAQAAACAAAEggAA=</HashCode>
+      <FileName>braintumoursegmentation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SPXClassifier" Collapsed="true">
+    <Position X="7.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAUAAAAAAAAAAAAAAEAAAAAAACAAAAAAA=</HashCode>
+      <FileName>spxclassifier.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SuperpixelisationWindow" Collapsed="true">
+    <Position X="5.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQQAAAVAAAAAAAAAAACIAGAgAAAAACAAAAAAA=</HashCode>
+      <FileName>superpixelisationwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ComplexSegmentation" Collapsed="true">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAUAAAQAAAAAAAAAAEQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>complexsegmentation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ImageArithmWindow" Collapsed="true">
+    <Position X="7.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAgAAUBAAAAAAAAAAAAAEAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>imagearithmwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ResultWindow" Collapsed="true">
+    <Position X="5.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAEUAAAAACAAAAAAAAEAAAEAAAAAAAAAAA=</HashCode>
+      <FileName>resultwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ThresholdToolWindow" Collapsed="true">
+    <Position X="5.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQUAAAUAAAAAIAAAAAAAAEAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>thresholdtoolwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui_BrainTumourSegmentationClass" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQEAAEBSAAFAQkBAAQFAAogACCQBI0ACgIBAAAAAIPE=</HashCode>
+      <FileName>GeneratedFiles\ui_braintumoursegmentation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui_ComplexSegmentation" Collapsed="true">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAAAAAAAAAAEAAAABQQAIAAAAAAAAAAAAQA=</HashCode>
+      <FileName>GeneratedFiles\ui_complexsegmentation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui_ImageArithmWindow" Collapsed="true">
+    <Position X="2.25" Y="2.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>4YAAAAIEAAEAAAAAIMAAAAAAAwwEsAAAAKAAAAAAAQA=</HashCode>
+      <FileName>GeneratedFiles\ui_imagearithmwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui_ResultWindow" Collapsed="true">
+    <Position X="0.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAIAAAAAIAQAAAAAAEAAAgQAIAAABIAAAAAAAEA=</HashCode>
+      <FileName>GeneratedFiles\ui_resultwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui_SPXClassifier" Collapsed="true">
+    <Position X="4" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAEAAIAAAAAAAAAAAABAAAAAQQAIAAAAAAAAAAAAQA=</HashCode>
+      <FileName>GeneratedFiles\ui_spxclassifier.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui_SuperpixelisationWindow" Collapsed="true">
+    <Position X="0.5" Y="5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>wQCAAQIEAAgAABwBEQEIAAAUKwSE4EAQBIAAABoAAQA=</HashCode>
+      <FileName>GeneratedFiles\ui_superpixelisationwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui_ThresholdToolWindow" Collapsed="true">
+    <Position X="2.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IEIAAABAAAgQEJQAAABAAAAAAwQEoAAQCCAAQAIMAQA=</HashCode>
+      <FileName>GeneratedFiles\ui_thresholdtoolwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui::SPXClassifier" Collapsed="true">
+    <Position X="4" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\ui_spxclassifier.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui::SuperpixelisationWindow" Collapsed="true">
+    <Position X="0.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\ui_superpixelisationwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui::ComplexSegmentation" Collapsed="true">
+    <Position X="4" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\ui_complexsegmentation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui::ImageArithmWindow" Collapsed="true">
+    <Position X="2.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\ui_imagearithmwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui::ResultWindow" Collapsed="true">
+    <Position X="0.5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\ui_resultwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui::ThresholdToolWindow" Collapsed="true">
+    <Position X="2.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\ui_thresholdtoolwindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ui::BrainTumourSegmentationClass" Collapsed="true">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\ui_braintumoursegmentation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="qt_meta_stringdata_BrainTumourSegmentation_t" Collapsed="true">
+    <Position X="7.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\Release\moc_braintumoursegmentation.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="qt_meta_stringdata_ComplexSegmentation_t" Collapsed="true">
+    <Position X="5.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\Release\moc_complexsegmentation.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="qt_meta_stringdata_ImageArithmWindow_t" Collapsed="true">
+    <Position X="5.75" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\Release\moc_imagearithmwindow.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="qt_meta_stringdata_ResultWindow_t" Collapsed="true">
+    <Position X="7.5" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\Release\moc_resultwindow.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="qt_meta_stringdata_SPXClassifier_t" Collapsed="true">
+    <Position X="7.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\Release\moc_spxclassifier.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="qt_meta_stringdata_SuperpixelisationWindow_t" Collapsed="true">
+    <Position X="5.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\Release\moc_superpixelisationwindow.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="qt_meta_stringdata_ThresholdToolWindow_t" Collapsed="true">
+    <Position X="7.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>GeneratedFiles\Release\moc_thresholdtoolwindow.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="`anonymous-namespace'::initializer" Collapsed="true">
+    <Position X="5.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAEA=</HashCode>
+      <FileName>GeneratedFiles\qrc_braintumoursegmentation.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -77,7 +77,6 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 		}
 
 		eSlice.setData(rgbResult);
-
 		evaluatedSlices.push_back(eSlice);
 
 		// Save results to file
@@ -95,7 +94,6 @@ void bts::ProcessedData::evaluate(std::vector<bts::Slice> groundTruthSlices)
 		tFN += eSlice.FN;
 		tJaccard = tTP / float(tTP + tFP + tFN);
 		tDice = (2 * tTP) / float((2 * tTP) + tFP + tFN);
-		
 	}
 	// Save total
 	resultFile << std::to_string(tDice) + "," +

@@ -79,7 +79,7 @@ void ImageArithmWindow::on_buttonBox_accepted()
 	{
 		slicesResult = bts::substruct(slicesA, slicesB, nfA, nfB);
 		processedData->setSlices(slicesResult);
-		processedData->setTitle("Subtract " + ui->slicesAComboBox->currentText().toStdString() + " - " + ui->slicesBComboBox->currentText().toStdString()); // TODO prerob aby sme vedeli aj pacienta, ale mozno by bolo dobre dovolit operacie len medzi jednym pacientom
+		processedData->setTitle("Subtract " + ui->slicesAComboBox->currentText().toStdString() + " - " + ui->slicesBComboBox->currentText().toStdString()); 
 	}
 	else if (ui->ANDradioButton->isChecked())
 	{
