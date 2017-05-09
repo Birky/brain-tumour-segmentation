@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BrainTumourSegmentation", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BTS_toolbox", "BTS_toolbox\BTS_toolbox.vcxproj", "{378867AD-1FB0-4FD2-ABAB-49C3B2F89BA1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gSLICr_lib", "..\..\gSLICr\gSLICr-master\build\gSLICr_lib.vcxproj", "{19AF7717-155C-3CA0-9419-9F95A7ACE67D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gSLICr_lib", "gSLICr\gSLICr-master\build\gSLICr_lib.vcxproj", "{19AF7717-155C-3CA0-9419-9F95A7ACE67D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

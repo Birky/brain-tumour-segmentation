@@ -399,11 +399,11 @@
     <ResourceCompile Include="BrainTumourSegmentation.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\gSLICr\gSLICr-master\build\gSLICr_lib.vcxproj">
-      <Project>{19af7717-155c-3ca0-9419-9f95a7ace67d}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\BTS_toolbox\BTS_toolbox.vcxproj">
       <Project>{378867ad-1fb0-4fd2-abab-49c3b2f89ba1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\gSLICr\gSLICr-master\build\gSLICr_lib.vcxproj">
+      <Project>{19af7717-155c-3ca0-9419-9f95a7ace67d}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
